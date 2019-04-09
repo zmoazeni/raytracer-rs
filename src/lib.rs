@@ -40,7 +40,7 @@ impl Drawable {
   pub fn normalize(&self) -> Option<Drawable> {
     match self {
       Drawable::Vector(x, y, z) => {
-        let magnitude = self.magnitude().unwrap();
+        let magnitude = self.magnitude().expect("should be able to calculate the magnitude of vectors");
         Some(Drawable::vector(x / magnitude, y / magnitude, z / magnitude))
       },
       _ => None,
