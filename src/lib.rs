@@ -29,21 +29,21 @@ impl Drawable {
 
   pub fn magnitude(&self) -> Option<f32> {
     match self {
-      Drawable::Point(..) => None,
       Drawable::Vector(x, y, z) => {
         let v = (x.powi(2) + y.powi(2) + z.powi(2)).sqrt();
         Some(v)
-      }
+      },
+      _ => None
     }
   }
 
   pub fn normalize(&self) -> Option<Drawable> {
     match self {
-      Drawable::Point(..) => None,
       Drawable::Vector(x, y, z) => {
         let magnitude = self.magnitude().unwrap();
         Some(Drawable::vector(x / magnitude, y / magnitude, z / magnitude))
-      }
+      },
+      _ => None,
     }
   }
 }
@@ -62,7 +62,7 @@ impl Add for Drawable {
         Drawable::Point(x1, y1, z1) => {
           match other {
             Drawable::Vector(x2, y2, z2) => Some(Drawable::point(x1 + x2, y1 + y2, z1 + z2)),
-            Drawable::Point(..) => None,
+            _ => None,
           }
         }
       }
@@ -77,7 +77,7 @@ impl Sub for Drawable {
         Drawable::Vector(x1, y1, z1) => {
           match rhs {
             Drawable::Vector(x2, y2, z2) => Some(Drawable::vector(x1 - x2, y1 - y2, z1 - z2)),
-            Drawable::Point(..) => None,
+            _ => None,
           }
         },
         Drawable::Point(x1, y1, z1) => {
@@ -118,13 +118,13 @@ impl PartialEq for Drawable {
         Drawable::Vector(x1, y1, z1) => {
           match other {
             Drawable::Vector(x2, y2, z2) => feq(*x1, *x2) && feq(*y1, *y2) && feq(*z1, *z2),
-            Drawable::Point(..) => false,
+            _ => false,
           }
         },
         Drawable::Point(x1, y1, z1) => {
           match other {
             Drawable::Point(x2, y2, z2) => feq(*x1, *x2) && feq(*y1, *y2) && feq(*z1, *z2),
-            Drawable::Vector(..) => false,
+            _ => false,
           }
         },
       }
