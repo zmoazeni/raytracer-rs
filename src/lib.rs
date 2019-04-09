@@ -17,6 +17,13 @@ impl Drawable {
   pub fn vector(x: f32, y: f32, z: f32) -> Drawable {
     Drawable::Vector(x, y, z)
   }
+
+  pub fn negate(&self) -> Drawable {
+    match self {
+      Drawable::Vector(x, y, z) => Drawable::Vector(-x, -y, -z),
+      Drawable::Point(x, y, z) => Drawable::Point(-x, -y, -z),
+    }
+  }
 }
 
 impl Add for Drawable {
@@ -149,5 +156,22 @@ mod test_subtract {
     let point = Drawable::point(10.0, 20.0, 30.0);
     let vector = Drawable::vector(1.0, 2.0, 3.0);
     assert_eq!(point - vector, Some(Drawable::Point(9.0, 18.0, 27.0)));
+  }
+}
+
+#[cfg(test)]
+mod test_negation {
+  use super::*;
+
+  #[test]
+  fn point() {
+    let point = Drawable::point(1.0, 2.0, 3.0);
+    assert_eq!(point.negate(), Drawable::Point(-1.0, -2.0, -3.0));
+  }
+
+  #[test]
+  fn vector() {
+    let vector = Drawable::vector(1.0, 2.0, 3.0);
+    assert_eq!(vector.negate(), Drawable::Vector(-1.0, -2.0, -3.0));
   }
 }
