@@ -7,8 +7,8 @@ const THRESHOLD: f32 = 0.00001;
 
 #[derive(Debug)]
 pub enum Drawable {
-  Point (f32, f32, f32),
-  Vector (f32, f32, f32),
+  Point(f32, f32, f32),
+  Vector(f32, f32, f32),
 }
 
 impl Drawable {
@@ -24,6 +24,26 @@ impl Drawable {
     match self {
       Drawable::Vector(x, y, z) => Drawable::Vector(-x, -y, -z),
       Drawable::Point(x, y, z) => Drawable::Point(-x, -y, -z),
+    }
+  }
+
+  pub fn magnitude(&self) -> Option<f32> {
+    match self {
+      Drawable::Point(..) => None,
+      Drawable::Vector(x, y, z) => {
+        let v = (x.powi(2) + y.powi(2) + z.powi(2)).sqrt();
+        Some(v)
+      }
+    }
+  }
+
+  pub fn normalize(&self) -> Option<Drawable> {
+    match self {
+      Drawable::Point(..) => None,
+      Drawable::Vector(x, y, z) => {
+        let magnitude = self.magnitude().unwrap();
+        Some(Drawable::vector(x / magnitude, y / magnitude, z / magnitude))
+      }
     }
   }
 }
@@ -220,5 +240,44 @@ mod test_mult_and_div {
 
     let vector = Drawable::vector(1.0, 2.0, 3.0);
     assert_eq!(vector / 2.0, Drawable::Vector(0.5, 1.0, 1.5));
+  }
+}
+
+#[cfg(test)]
+mod test_magnitude_and_normalization {
+  use super::*;
+
+  #[test]
+  fn magnitude_of_point() {
+    let point = Drawable::point(1.0, 2.0, 3.0);
+    assert_eq!(point.magnitude(), None);
+  }
+
+  #[test]
+  fn magnitude_of_vector() {
+    let vector = Drawable::vector(1.0, 2.0, 3.0);
+    let x: f32 = 14.0;
+    assert_eq!(vector.magnitude().unwrap(), x.sqrt());
+  }
+
+  #[test]
+  fn normalize_point() {
+    let point = Drawable::point(1.0, 2.0, 3.0);
+    assert_eq!(point.normalize(), None);
+  }
+
+  #[test]
+  fn normalize_vector() {
+    let vector = Drawable::vector(4.0, 0.0, 0.0);
+    assert_eq!(vector.normalize(), Some(Drawable::vector(1.0, 0.0, 0.0)));
+
+    let vector = Drawable::vector(1.0, 2.0, 3.0);
+    assert_eq!(vector.normalize(), Some(Drawable::vector(0.26726, 0.53452, 0.80178)))
+  }
+
+  #[test]
+  fn magnitude_of_a_normalized_vector_is_always_one() {
+    let vector = Drawable::vector(4.0, 0.0, 0.0);
+    assert_eq!(vector.normalize().unwrap().magnitude(), Some(1.0));
   }
 }
