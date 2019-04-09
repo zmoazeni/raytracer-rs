@@ -46,6 +46,31 @@ impl Drawable {
       _ => None,
     }
   }
+
+  // The smaller the output, the larger the angle between vectors
+  pub fn dot(&self, rhs: &Drawable) -> f32 {
+    if let Drawable::Vector(x1, y1, z1) = self {
+      if let Drawable::Vector(x2, y2, z2) = rhs {
+        return (x1 * x2) + (y1 * y2) + (z1 * z2)
+      }
+    }
+    0.0
+  }
+
+  // Finds new vector perpendicular to two vectors
+  pub fn cross(&self, rhs: &Drawable) -> Option<Drawable> {
+    if let Drawable::Vector(x1, y1, z1) = self {
+      if let Drawable::Vector(x2, y2, z2) = rhs {
+        let v = Drawable::vector(
+          (y1 * z2) - (z1 * y2),
+          (z1 * x2) - (x1 * z2),
+          (x1 * y2) - (y1 * x2)
+        );
+        return Some(v)
+      }
+    }
+    None
+  }
 }
 
 impl Add for Drawable {
@@ -279,5 +304,44 @@ mod test_magnitude_and_normalization {
   fn magnitude_of_a_normalized_vector_is_always_one() {
     let vector = Drawable::vector(4.0, 0.0, 0.0);
     assert_eq!(vector.normalize().unwrap().magnitude(), Some(1.0));
+  }
+}
+
+#[cfg(test)]
+mod test_dot_and_cross {
+  use super::*;
+
+  #[test]
+  fn dot_product_with_points() {
+    let point1 = Drawable::point(1.0, 2.0, 3.0);
+    let vector1 = Drawable::vector(1.0, 2.0, 3.0);
+    assert_eq!(point1.dot(&point1), 0.0);
+    assert_eq!(point1.dot(&vector1), 0.0);
+    assert_eq!(vector1.dot(&point1), 0.0);
+  }
+
+  #[test]
+  fn dot_product_with_vectors() {
+    let vector1 = Drawable::vector(1.0, 2.0, 3.0);
+    let vector2 = Drawable::vector(2.0, 3.0, 4.0);
+    assert_eq!(vector1.dot(&vector2), 20.0);
+    assert_eq!(vector2.dot(&vector1), 20.0);
+  }
+
+  #[test]
+  fn cross_product_with_points() {
+    let point1 = Drawable::point(1.0, 2.0, 3.0);
+    let vector1 = Drawable::vector(1.0, 2.0, 3.0);
+    assert_eq!(point1.cross(&point1), None);
+    assert_eq!(point1.cross(&vector1), None);
+    assert_eq!(vector1.cross(&point1), None);
+  }
+
+  #[test]
+  fn cross_product_with_vectors() {
+    let vector1 = Drawable::vector(1.0, 2.0, 3.0);
+    let vector2 = Drawable::vector(2.0, 3.0, 4.0);
+    assert_eq!(vector1.cross(&vector2), Some(Drawable::vector(-1.0, 2.0, -1.0)));
+    assert_eq!(vector2.cross(&vector1), Some(Drawable::vector(1.0, -2.0, 1.0)));
   }
 }
