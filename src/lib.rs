@@ -1,5 +1,7 @@
 use std::ops::Add;
 use std::ops::Sub;
+use std::ops::Mul;
+use std::ops::Div;
 
 const THRESHOLD: f32 = 0.00001;
 
@@ -64,6 +66,28 @@ impl Sub for Drawable {
             Drawable::Vector(x2, y2, z2) => Some(Drawable::point(x1 - x2, y1 - y2, z1 - z2)),
           }
         }
+      }
+    }
+}
+
+impl Mul<f32> for Drawable {
+    type Output = Drawable;
+
+    fn mul(self, rhs: f32) -> Drawable {
+      match self {
+        Drawable::Point(x, y, z) => Drawable::Point(x * rhs, y * rhs, z * rhs),
+        Drawable::Vector(x, y, z) => Drawable::Vector(x * rhs, y * rhs, z * rhs),
+      }
+    }
+}
+
+impl Div<f32> for Drawable {
+    type Output = Drawable;
+
+    fn div(self, rhs: f32) -> Drawable {
+      match self {
+        Drawable::Point(x, y, z) => Drawable::Point(x / rhs, y / rhs, z / rhs),
+        Drawable::Vector(x, y, z) => Drawable::Vector(x / rhs, y / rhs, z / rhs),
       }
     }
 }
@@ -173,5 +197,28 @@ mod test_negation {
   fn vector() {
     let vector = Drawable::vector(1.0, 2.0, 3.0);
     assert_eq!(vector.negate(), Drawable::Vector(-1.0, -2.0, -3.0));
+  }
+}
+
+#[cfg(test)]
+mod test_mult_and_div {
+  use super::*;
+
+  #[test]
+  fn multiplying_point_and_vector() {
+    let point = Drawable::point(1.0, 2.0, 3.0);
+    assert_eq!(point * 2.0, Drawable::Point(2.0, 4.0, 6.0));
+
+    let vector = Drawable::vector(1.0, 2.0, 3.0);
+    assert_eq!(vector * 2.0, Drawable::Vector(2.0, 4.0, 6.0));
+  }
+
+  #[test]
+  fn dividing_point_and_vector() {
+    let point = Drawable::point(1.0, 2.0, 3.0);
+    assert_eq!(point / 2.0, Drawable::Point(0.5, 1.0, 1.5));
+
+    let vector = Drawable::vector(1.0, 2.0, 3.0);
+    assert_eq!(vector / 2.0, Drawable::Vector(0.5, 1.0, 1.5));
   }
 }
