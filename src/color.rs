@@ -2,13 +2,16 @@ use std::ops::Add;
 use std::ops::Sub;
 use std::ops::Mul;
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Color { red: f32, green: f32, blue: f32 }
 
 impl Color {
     pub fn new(red: f32, green: f32, blue: f32) -> Color {
         Color { red, green, blue }
     }
+
+    pub fn white() -> Color { Self::new(1.0, 1.0, 1.0) }
+    pub fn black() -> Color { Self::new(0.0, 0.0, 0.0) }
 }
 
 impl PartialEq for Color {
@@ -80,5 +83,11 @@ mod test_colors {
         let c1 = Color::new(1.0, 0.2, 0.4);
         let c2 = Color::new(0.9, 1.0, 0.1);
         assert_eq!(c1 * c2, Color::new(0.9, 0.2, 0.04))
+    }
+
+    #[test]
+    fn keyword_colors() {
+        assert_eq!(Color::white(), Color::new(1.0, 1.0, 1.0));
+        assert_eq!(Color::black(), Color::new(0.0, 0.0, 0.0));
     }
 }
