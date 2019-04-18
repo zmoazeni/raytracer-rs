@@ -151,8 +151,7 @@ mod test {
         c.write_pixel((2, 1), Color::new(0.0, 0.5, 0.0));
         c.write_pixel((4, 2), Color::new(-0.5, 0.0, 1.0));
 
-        let mut lines = vec!();
-        ppm_lines(&c, &mut lines);
+        let lines = ppm_lines(&c);
         assert_eq!(lines.len(), 7);
         assert_eq!(lines[0], "P3");
         assert_eq!(lines[1], "5 3");
@@ -169,8 +168,7 @@ mod test {
         for (x, y) in c.iter() {
             c.write_pixel((x, y), Color::new(1.0, 0.8, 0.6));
         }
-        let mut lines = vec!();
-        ppm_lines(&c, &mut lines);
+        let lines = ppm_lines(&c);
         assert_eq!(lines.len(), 8);
         assert_eq!(lines[3], "255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 255 204");
         assert_eq!(lines[4], "153 255 204 153 255 204 153 255 204 153 255 204 153");
@@ -179,15 +177,17 @@ mod test {
         assert_eq!(lines[7], "");
     }
 
-    fn ppm_lines(canvas: &Canvas, out_vec: &mut Vec<String>) {
+    fn ppm_lines(canvas: &Canvas) -> Vec<String> {
         let mut v = Vec::new();
         let result = canvas.write_ppm(&mut v);
         assert!(result.is_ok());
         let s = String::from_utf8(v).unwrap();
         let lines: Vec<&str> = s.lines().collect();
+        let mut return_vec = Vec::with_capacity(lines.len());
         for line in lines {
-            out_vec.push(String::from(line));
+            return_vec.push(String::from(line));
         }
+        return_vec
     }
 
     #[test]
