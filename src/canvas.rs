@@ -28,7 +28,11 @@ impl Canvas {
     }
 
     pub fn write_pixel(&mut self, (x, y): (usize, usize), color: Color) {
-        self.pixels[y][x] = color
+        let (width, height) = self.dimensions;
+        // Ignore any pixels outside the canvas
+        if x < width && y < height {
+            self.pixels[y][x] = color
+        }
     }
 
     pub fn pixel_at(&self, x: usize, y: usize) -> &Color {
@@ -183,6 +187,16 @@ mod test {
         let lines: Vec<&str> = s.lines().collect();
         for line in lines {
             out_vec.push(String::from(line));
+        }
+    }
+
+    #[test]
+    fn pixels_outside_canvas() {
+        let mut c = Canvas::new(2, 2);
+        c.write_pixel((5, 5), Color::white());
+        for (x, y) in c.iter() {
+            let color = c.pixel_at(x, y);
+            assert_eq!(color, &Color::black());
         }
     }
 }
