@@ -8,4 +8,8 @@ edition = "2018"
 name = "raytracer"
 path = "src/lib.rs"
 
+[[example]]
+name = "cannon"
+path = "example/cannon.rs"
+
 [dependencies]
