@@ -7,7 +7,7 @@ use std::ops::{Index,IndexMut};
 const MAX_PPM_LINE_LENGTH: usize = 70;
 
 pub struct Canvas {
-    dimensions: (usize, usize),
+    pub dimensions: (usize, usize),
     pixels: Vec<Vec<Color>>
 }
 

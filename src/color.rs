@@ -2,7 +2,7 @@ use std::ops::Add;
 use std::ops::Sub;
 use std::ops::Mul;
 
-#[derive(Debug,Clone)]
+#[derive(Debug,Copy,Clone)]
 pub struct Color { red: f32, green: f32, blue: f32 }
 
 impl Color {
