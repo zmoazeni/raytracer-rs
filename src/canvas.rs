@@ -2,6 +2,7 @@ use super::*;
 use std::fs::File;
 use std::path::Path;
 use std::io::{BufWriter, Write};
+use std::ops::{Index,IndexMut};
 
 const MAX_PPM_LINE_LENGTH: usize = 70;
 
@@ -27,16 +28,12 @@ impl Canvas {
         Canvas { dimensions: (width, height), pixels: v2 }
     }
 
-    pub fn write_pixel(&mut self, (x, y): (usize, usize), color: Color) {
+    pub fn set(&mut self, (x, y): (usize, usize), color: Color) {
         let (width, height) = self.dimensions;
         // Ignore any pixels outside the canvas
         if x < width && y < height {
-            self.pixels[y][x] = color
+            self[(x, y)] = color
         }
-    }
-
-    pub fn pixel_at(&self, x: usize, y: usize) -> &Color {
-        &self.pixels[y][x]
     }
 
     pub fn iter(&self) -> CanvasIterator {
@@ -118,6 +115,19 @@ impl Iterator for CanvasIterator {
     }
 }
 
+impl Index<(usize, usize)> for Canvas {
+    type Output = Color;
+    fn index(&self, (x, y): (usize, usize)) -> &Color {
+        &self.pixels[y][x]
+    }
+}
+
+impl IndexMut<(usize, usize)> for Canvas {
+    fn index_mut(&mut self, (x, y): (usize, usize)) -> &mut Color {
+        &mut self.pixels[y][x]
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -130,7 +140,7 @@ mod test {
         let mut count = 0;
         for (x, y) in c.iter() {
             count += 1;
-            let color = c.pixel_at(x, y);
+            let color = &c[(x, y)];
             assert_eq!(color, &Color::black());
         }
         assert_eq!(count, 15);
@@ -139,17 +149,17 @@ mod test {
     #[test]
     fn writing_pixels() {
         let mut c = Canvas::new(40, 20);
-        c.write_pixel((2, 10), Color::white());
-        assert_eq!(c.pixel_at(0, 0), &Color::black());
-        assert_eq!(c.pixel_at(2, 10), &Color::white());
+        c[(2, 10)] = Color::white();
+        assert_eq!(c[(0, 0)], Color::black());
+        assert_eq!(c[(2, 10)], Color::white());
     }
 
     #[test]
     fn save_ppm_to_file() {
         let mut c = Canvas::new(5, 3);
-        c.write_pixel((0, 0), Color::new(1.5, 0.0, 0.0));
-        c.write_pixel((2, 1), Color::new(0.0, 0.5, 0.0));
-        c.write_pixel((4, 2), Color::new(-0.5, 0.0, 1.0));
+        c[(0, 0)] = Color::new(1.5, 0.0, 0.0);
+        c[(2, 1)] = Color::new(0.0, 0.5, 0.0);
+        c[(4, 2)] = Color::new(-0.5, 0.0, 1.0);
 
         let lines = ppm_lines(&c);
         assert_eq!(lines.len(), 7);
@@ -166,7 +176,7 @@ mod test {
     fn saving_ppm_splits_long_lines() {
         let mut c = Canvas::new(10, 2);
         for (x, y) in c.iter() {
-            c.write_pixel((x, y), Color::new(1.0, 0.8, 0.6));
+            c[(x, y)] = Color::new(1.0, 0.8, 0.6);
         }
         let lines = ppm_lines(&c);
         assert_eq!(lines.len(), 8);
@@ -193,9 +203,9 @@ mod test {
     #[test]
     fn pixels_outside_canvas() {
         let mut c = Canvas::new(2, 2);
-        c.write_pixel((5, 5), Color::white());
+        c.set((5, 5), Color::white());
         for (x, y) in c.iter() {
-            let color = c.pixel_at(x, y);
+            let color = &c[(x, y)];
             assert_eq!(color, &Color::black());
         }
     }
