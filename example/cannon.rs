@@ -1,33 +1,40 @@
 extern crate raytracer;
 
-use std::{thread,time};
+use raytracer::{Point,Vector};
 
 struct Environment {
-    gravity: raytracer::Vector,
-    wind: raytracer::Vector
+    gravity: Vector,
+    wind: Vector
 }
 
 #[derive(Debug)]
 struct Projectile {
-    position: raytracer::Point,
-    velocity: raytracer::Vector
+    position: Point,
+    velocity: Vector
 }
 
 fn main() {
     let environment = Environment{
-        gravity: raytracer::Vector::new(0.0, -0.1, 0.0),
-        wind: raytracer::Vector::new(-0.01, 0.0, 0.0),
+        gravity: Vector::new(0.0, -0.1, 0.0),
+        wind: Vector::new(-0.01, 0.0, 0.0),
     };
 
     let mut projectile = Projectile {
-        position: raytracer::Point::new(0.0, 1.0, 0.0),
-        velocity: raytracer::Vector::new(1.0, 1.0, 0.0).normalize(),
+        position: Point::new(0.0, 1.0, 0.0),
+        velocity: Vector::new(1.0, 1.0, 0.0).normalize() * 1.5,
     };
 
+    let mut count = 0;
     loop {
-        projectile = tick(&environment, projectile);
-        println!("{:?}", projectile);
-        thread::sleep(time::Duration::from_secs(1));
+        println!("{}: {:?}", count, projectile);
+        let Point(_, y, _) = projectile.position;
+        if y < 0.0 {
+            break;
+        } else {
+            projectile = tick(&environment, projectile);
+            count += 1;
+        }
+
     }
 }
 

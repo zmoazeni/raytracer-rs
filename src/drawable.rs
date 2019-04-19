@@ -4,10 +4,10 @@ use std::ops::Mul;
 use std::ops::Div;
 
 #[derive(Debug, Copy, Clone)]
-pub struct Point(f32, f32, f32);
+pub struct Point(pub f32, pub f32, pub f32);
 
 #[derive(Debug, Copy, Clone)]
-pub struct Vector(f32, f32, f32);
+pub struct Vector(pub f32, pub f32, pub f32);
 
 impl Point {
     pub fn new<X, Y, Z>(x: X, y: Y, z: Z) -> Point
@@ -30,12 +30,14 @@ impl Vector {
         *self * -1.0
     }
 
+    // magnitude is the distance traveled if you were to walk the vector
     pub fn magnitude(&self) -> f32 {
         let Vector(x, y, z) = self;
         let v = (x.powi(2) + y.powi(2) + z.powi(2)).sqrt();
         v
     }
 
+    // converts the vector into a unit vector
     pub fn normalize(&self) -> Vector {
         let Vector(x, y, z) = self;
         let magnitude = self.magnitude();
