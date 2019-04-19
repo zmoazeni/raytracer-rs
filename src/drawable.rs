@@ -3,19 +3,22 @@ use std::ops::Sub;
 use std::ops::Mul;
 use std::ops::Div;
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub enum Drawable {
     Point(f32, f32, f32),
     Vector(f32, f32, f32),
 }
 
+
 impl Drawable {
-    pub fn point(x: f32, y: f32, z: f32) -> Drawable {
-        Drawable::Point(x, y, z)
+    pub fn point<X, Y, Z>(x: X, y: Y, z: Z) -> Drawable
+        where X: Into<f32>, Y: Into<f32>, Z: Into<f32> {
+        Drawable::Point(x.into(), y.into(), z.into())
     }
 
-    pub fn vector(x: f32, y: f32, z: f32) -> Drawable {
-        Drawable::Vector(x, y, z)
+    pub fn vector<X, Y, Z>(x: X, y: Y, z: Z) -> Drawable
+        where X: Into<f32>, Y: Into<f32>, Z: Into<f32> {
+        Drawable::Vector(x.into(), y.into(), z.into())
     }
 
     pub fn negate(&self) -> Drawable {
