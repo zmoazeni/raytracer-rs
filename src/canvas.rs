@@ -42,7 +42,7 @@ impl Canvas {
 
     pub fn write_ppm<W: Write>(&self, write: &mut W) -> Result<(), std::io::Error> {
         write.write_all(self.ppm_header().as_bytes())?;
-        write.write_all(self.ppm_pixels().as_bytes())?;
+        self.write_ppm_pixels(write)?;
         Ok(())
     }
 
@@ -59,8 +59,7 @@ impl Canvas {
             256\n", width, height)
     }
 
-    pub fn ppm_pixels(&self) -> String {
-        let mut output = String::new();
+    pub fn write_ppm_pixels<W: Write>(&self, write: &mut W) -> Result<(), std::io::Error> {
         for row in &self.pixels {
             let mut current_line = String::new();
 
@@ -76,18 +75,18 @@ impl Canvas {
                     if part_with_space.len() + current_line.len() < MAX_PPM_LINE_LENGTH {
                         current_line.push_str(&part_with_space);
                     } else {
-                        output.push_str(&format!("{}\n", current_line));
+                        write.write_all((format!("{}\n", current_line)).as_bytes())?;
                         current_line = part.clone();
                     }
                 }
             }
 
             if !current_line.is_empty() {
-                output.push_str(&format!("{}\n", current_line));
+                write.write_all((format!("{}\n", current_line)).as_bytes())?;
             }
         }
-        output.push_str("\n");
-        output
+        write.write_all(("\n").as_bytes())?;
+        Ok(())
     }
 }
 
