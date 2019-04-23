@@ -3,18 +3,13 @@ use std::fs::File;
 use std::path::Path;
 use std::io::{BufWriter, Write};
 use std::ops::{Index,IndexMut};
+use iterator::*;
 
 const MAX_PPM_LINE_LENGTH: usize = 70;
 
 pub struct Canvas {
     pub dimensions: (usize, usize),
     pixels: Vec<Vec<Color>>
-}
-
-pub struct CanvasIterator {
-    dimensions: (usize, usize),
-    position: (usize, usize),
-    first_pass: bool,
 }
 
 impl Canvas {
@@ -36,8 +31,8 @@ impl Canvas {
         }
     }
 
-    pub fn iter(&self) -> CanvasIterator {
-        CanvasIterator { dimensions: self.dimensions, position: (0, 0), first_pass: true }
+    pub fn iter(&self) -> DimensionalIterator {
+        DimensionalIterator::canvas(self.dimensions)
     }
 
     pub fn write_ppm<W: Write>(&self, write: &mut W) -> Result<(), std::io::Error> {
@@ -87,30 +82,6 @@ impl Canvas {
         }
         write.write_all(("\n").as_bytes())?;
         Ok(())
-    }
-}
-
-impl Iterator for CanvasIterator {
-    type Item = (usize, usize);
-
-    fn next(&mut self) -> Option<(usize, usize)> {
-        let (width, height) = self.dimensions;
-        let (x, y) = self.position;
-
-        if self.first_pass && x < width {
-            self.first_pass = false;
-            return Some(self.position);
-        }
-
-        if x + 1 < width {
-            self.position = (x + 1, y);
-        } else if y + 1 < height {
-            self.position = (0, y + 1);
-        } else {
-            return None;
-        }
-
-        Some(self.position)
     }
 }
 
