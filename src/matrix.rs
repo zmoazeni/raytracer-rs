@@ -1,9 +1,10 @@
 use super::iterator::*;
 use std::ops::{Index,IndexMut};
 
+// Requires trailing ; character. Don't know if there's a way to make that last one optional
 #[allow(unused_macros)]
 macro_rules! matrix {
-    ($($($x:expr),*;)*) => {
+    ( $( $($x:expr),* ;)* ) => {
         {
             Matrix::with_values(vec![
                 $(
