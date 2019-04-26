@@ -1,19 +1,23 @@
 use super::iterator::*;
+use super::util::*;
 use std::ops::{Index,IndexMut};
+use std::cmp::{PartialEq,Eq};
 
-// Requires trailing ; character. Don't know if there's a way to make that last one optional
 #[allow(unused_macros)]
 macro_rules! matrix {
-    ( $( $($x:expr),* ;)* ) => {
-        {
-            Matrix::with_values(vec![
-                $(
-                    vec![$($x),*]
-                ),*
-            ])
-        }
-    };
+    (
+        $(
+            $($x:expr),+
+        );* $(;)?
+    ) => (
+        Matrix::with_values(
+            vec![$(
+                vec![$($x),*],
+            )*]
+        )
+    )
 }
+
 
 #[derive(Debug,Clone)]
 pub struct Matrix {
@@ -66,6 +70,18 @@ impl IndexMut<(usize, usize)> for Matrix {
         &mut self.values[y][x]
     }
 }
+
+impl PartialEq for Matrix {
+    fn eq(&self, rhs: &Matrix) -> bool {
+        if self.dimensions != rhs.dimensions {
+            return false;
+        }
+        self.iter().all(|dimensions| {
+            feq(self[dimensions], rhs[dimensions])
+        })
+    }
+}
+impl Eq for Matrix {}
 
 #[cfg(test)]
 mod test {
@@ -129,5 +145,32 @@ mod test {
         assert_eq!(m[(0,0)], -3.0);
         assert_eq!(m[(1,1)], -2.0);
         assert_eq!(m[(2,2)], 1.0);
+    }
+
+    #[test]
+    fn equivalence() {
+        let m = matrix![
+            1.0, 2.0;
+            3.0, 4.0;
+        ];
+        assert_eq!(m, m);
+
+        let m2 = matrix![
+            1.0, 2.0;
+            3.0, 4.0;
+        ];
+        assert_eq!(m, m2);
+
+        let m3 = matrix![
+            1.0;
+            2.0
+        ];
+        assert_ne!(m, m3);
+
+        let m4 = matrix![
+            1.0, 2.0;
+            3.0, 10.0;
+        ];
+        assert_ne!(m, m4);
     }
 }
