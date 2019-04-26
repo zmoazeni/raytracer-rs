@@ -32,7 +32,6 @@ impl Matrix {
     }
 
     pub fn with_values(values: Vec<Vec<f32>>) -> Matrix {
-        // let mut m = Self::new(height, width);
         let height = values.len();
         let width = values.first().expect("matrix requires at least one row").len();
         let mut m = Self::new(height, width);
