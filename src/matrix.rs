@@ -1,6 +1,19 @@
 use super::iterator::*;
 use std::ops::{Index,IndexMut};
 
+#[allow(unused_macros)]
+macro_rules! matrix {
+    ($($($x:expr),*;)*) => {
+        {
+            Matrix::with_values(vec![
+                $(
+                    vec![$($x),*]
+                ),*
+            ])
+        }
+    };
+}
+
 #[derive(Debug,Clone)]
 pub struct Matrix {
     pub dimensions: (usize, usize),
@@ -76,12 +89,12 @@ mod test {
 
     #[test]
     fn indexing1() {
-        let m = Matrix::with_values(vec![
-            vec![1.0, 2.0, 3.0, 4.0],
-            vec![5.5, 6.5, 7.5, 8.5],
-            vec![9.0, 10.0, 11.0, 12.0],
-            vec![13.5, 14.5, 15.5, 16.5],
-        ]);
+        let m = matrix![
+            1.0, 2.0, 3.0, 4.0;
+            5.5, 6.5, 7.5, 8.5;
+            9.0, 10.0, 11.0, 12.0;
+            13.5, 14.5, 15.5, 16.5;
+        ];
 
         assert_eq!(m[(0,0)], 1.0);
         assert_eq!(m[(0,3)], 4.0);
@@ -94,10 +107,10 @@ mod test {
 
     #[test]
     fn indexing2() {
-        let m = Matrix::with_values(vec![
-            vec![-3.0, 5.0],
-            vec![1.0, -2.0],
-        ]);
+        let m = matrix![
+            -3.0, 5.0;
+            1.0, -2.0;
+        ];
 
         assert_eq!(m[(0,0)], -3.0);
         assert_eq!(m[(0,1)], 5.0);
@@ -107,11 +120,11 @@ mod test {
 
     #[test]
     fn indexing3() {
-        let m = Matrix::with_values(vec![
-            vec![-3.0, 5.0, 0.0],
-            vec![1.0, -2.0, -7.0],
-            vec![0.0, 1.0, 1.0],
-        ]);
+        let m = matrix![
+            -3.0, 5.0, 0.0;
+            1.0, -2.0, -7.0;
+            0.0, 1.0, 1.0;
+        ];
 
         assert_eq!(m[(0,0)], -3.0);
         assert_eq!(m[(1,1)], -2.0);
