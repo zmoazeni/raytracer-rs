@@ -88,6 +88,17 @@ impl Matrix {
         }
         m
     }
+
+    pub fn determinate(&self) -> Option<f32> {
+        if self.height != 2 && self.width != 2 {
+            return None
+        }
+        let a = self[(0, 0)];
+        let b = self[(0, 1)];
+        let c = self[(1, 0)];
+        let d = self[(1, 1)];
+        return Some((a * d) - (b * c))
+    }
 }
 
 impl Index<(usize, usize)> for Matrix {
@@ -315,5 +326,21 @@ mod test {
             0.0, 8.0, 3.0, 8.0
         ];
         assert_eq!(expected, m.transpose());
+    }
+
+    #[test]
+    fn determinate2x2() {
+        let m = matrix![
+            1.0, 5.0;
+            -3.0, 2.0
+        ];
+        assert_eq!(17.0, m.determinate().unwrap());
+    }
+
+    #[test]
+    fn determinate_unknown() {
+        assert_eq!(None, matrix![
+            1.0, 2.0, 3.0
+        ].determinate());
     }
 }
