@@ -80,6 +80,14 @@ impl Matrix {
         }
         id
     }
+
+    pub fn transpose(&self) -> Matrix {
+        let mut m = Matrix::new(self.width, self.height);
+        for (y, x) in self.iter() {
+            m[(x, y)] = self[(y, x)];
+        }
+        m
+    }
 }
 
 impl Index<(usize, usize)> for Matrix {
@@ -290,5 +298,22 @@ mod test {
             0.0, 0.0, 0.0, 1.0
         ];
         assert_eq!(expected, m.identity());
+    }
+
+    #[test]
+    fn transpose() {
+        let m = matrix![
+            0.0, 9.0, 3.0, 0.0;
+            9.0, 8.0, 0.0, 8.0;
+            1.0, 8.0, 5.0, 3.0;
+            0.0, 0.0, 5.0, 8.0
+        ];
+        let expected = matrix![
+            0.0, 9.0, 1.0, 0.0;
+            9.0, 8.0, 8.0, 0.0;
+            3.0, 0.0, 5.0, 5.0;
+            0.0, 8.0, 3.0, 8.0
+        ];
+        assert_eq!(expected, m.transpose());
     }
 }
