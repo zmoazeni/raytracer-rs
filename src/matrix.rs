@@ -70,6 +70,16 @@ impl Matrix {
     pub fn dimensions(&self) -> (usize, usize) {
         (self.height, self.width)
     }
+
+    pub fn identity(&self) -> Matrix {
+        let mut id = Matrix::new(self.height, self.width);
+        let mut x = 0;
+        for y in 0..self.height {
+            id[(y, x)] = 1.0;
+            x += 1;
+        }
+        id
+    }
 }
 
 impl Index<(usize, usize)> for Matrix {
@@ -263,5 +273,22 @@ mod test {
             1.0
         ];
         assert_eq!(Some(expected), m1 * tuple);
+    }
+
+    #[test]
+    fn identity() {
+        let m = matrix![
+            1.0, 2.0, 3.0, 4.0;
+            2.0, 4.0, 4.0, 2.0;
+            8.0, 6.0, 4.0, 1.0;
+            0.0, 0.0, 0.0, 1.0
+        ];
+        let expected = matrix![
+            1.0, 0.0, 0.0, 0.0;
+            0.0, 1.0, 0.0, 0.0;
+            0.0, 0.0, 1.0, 0.0;
+            0.0, 0.0, 0.0, 1.0
+        ];
+        assert_eq!(expected, m.identity());
     }
 }
