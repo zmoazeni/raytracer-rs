@@ -123,6 +123,13 @@ impl Matrix {
         }
         return Some(m)
     }
+
+    pub fn minor(&self, y: usize, x: usize) -> Option<f32> {
+        if self.height == 3 && self.width == 3 {
+            return self.submatrix(y, x).and_then(|m| m.determinate())
+        }
+        return None
+    }
 }
 
 impl Index<(usize, usize)> for Matrix {
@@ -402,5 +409,22 @@ mod test {
         ];
         assert_eq!(None, m.submatrix(3, 2));
         assert_eq!(None, m.submatrix(0, 3));
+    }
+
+    #[test]
+    fn minor_3x3() {
+        let a = matrix![
+            3.0, 5.0, 0.0;
+            2.0, -1.0, -7.0;
+            6.0, -1.0, 5.0
+        ];
+        let b = a.submatrix(1, 0).unwrap();
+        assert_eq!(25.0, b.determinate().unwrap());
+        assert_eq!(25.0, a.minor(1, 0).unwrap());
+    }
+
+    #[test]
+    fn minor_invalid_size() {
+        assert_eq!(None, matrix![1.0, 2.0].minor(0, 0));
     }
 }
