@@ -99,6 +99,30 @@ impl Matrix {
         let d = self[(1, 1)];
         return Some((a * d) - (b * c))
     }
+
+    pub fn submatrix(&self, skip_y: usize, skip_x: usize) -> Option<Matrix> {
+        if skip_y >= self.height || skip_x >= self.width {
+            return None
+        }
+        let mut m = Matrix::new(self.height - 1, self.width - 1);
+        for (y, x) in self.iter() {
+            if y != skip_y && x != skip_x {
+                let y2 = if y < skip_y {
+                    y
+                } else {
+                    y - 1
+                };
+                let x2 = if x < skip_x {
+                    x
+                } else {
+                    x - 1
+                };
+
+                m[(y2, x2)] = self[(y, x)];
+            }
+        }
+        return Some(m)
+    }
 }
 
 impl Index<(usize, usize)> for Matrix {
@@ -342,5 +366,41 @@ mod test {
         assert_eq!(None, matrix![
             1.0, 2.0, 3.0
         ].determinate());
+    }
+
+    #[test]
+    fn submatrix_pass() {
+        let m = matrix![
+            1.0, 5.0, 0.0;
+            -3.0, 2.0, 7.0;
+            0.0, 6.0, -3.0
+        ];
+        assert_eq!(matrix![
+            -3.0, 2.0;
+            0.0, 6.0
+        ], m.submatrix(0, 2).unwrap());
+
+        let m = matrix![
+            -6.0, 1.0, 1.0, 6.0;
+            -8.0, 5.0, 8.0, 6.0;
+            -1.0, 0.0, 8.0, 2.0;
+            -7.0, 1.0, -1.0, 1.0
+        ];
+        assert_eq!(matrix![
+            -6.0, 1.0, 6.0;
+            -8.0, 8.0, 6.0;
+            -7.0, -1.0, 1.0
+        ], m.submatrix(2, 1).unwrap());
+    }
+
+    #[test]
+    fn submatrix_beyond_size() {
+        let m = matrix![
+            1.0, 5.0, 0.0;
+            -3.0, 2.0, 7.0;
+            0.0, 6.0, -3.0
+        ];
+        assert_eq!(None, m.submatrix(3, 2));
+        assert_eq!(None, m.submatrix(0, 3));
     }
 }
