@@ -97,7 +97,7 @@ impl Matrix {
         let b = self[(0, 1)];
         let c = self[(1, 0)];
         let d = self[(1, 1)];
-        return Some((a * d) - (b * c))
+        Some((a * d) - (b * c))
     }
 
     pub fn submatrix(&self, skip_y: usize, skip_x: usize) -> Option<Matrix> {
@@ -121,19 +121,19 @@ impl Matrix {
                 m[(y2, x2)] = self[(y, x)];
             }
         }
-        return Some(m)
+        Some(m)
     }
 
     pub fn minor(&self, y: usize, x: usize) -> Option<f32> {
         if self.height == 3 && self.width == 3 {
             return self.submatrix(y, x).and_then(|m| m.determinate())
         }
-        return None
+        None
     }
 
     pub fn cofactor(&self, y: usize, x: usize) -> Option<f32> {
         let sign = if (y + x) % 2 == 1 { -1.0 } else { 1.0 };
-        return self.minor(y, x).map(|v| v * sign)
+        self.minor(y, x).map(|v| v * sign)
     }
 }
 
