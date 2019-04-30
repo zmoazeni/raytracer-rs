@@ -130,6 +130,11 @@ impl Matrix {
         }
         return None
     }
+
+    pub fn cofactor(&self, y: usize, x: usize) -> Option<f32> {
+        let sign = if (y + x) % 2 == 1 { -1.0 } else { 1.0 };
+        return self.minor(y, x).map(|v| v * sign)
+    }
 }
 
 impl Index<(usize, usize)> for Matrix {
@@ -426,5 +431,18 @@ mod test {
     #[test]
     fn minor_invalid_size() {
         assert_eq!(None, matrix![1.0, 2.0].minor(0, 0));
+    }
+
+    #[test]
+    fn cofactor_3x3() {
+        let a = matrix![
+            3.0, 5.0, 0.0;
+            2.0, -1.0, -7.0;
+            6.0, -1.0, 5.0
+        ];
+        assert_eq!(-12.0, a.minor(0, 0).unwrap());
+        assert_eq!(-12.0, a.cofactor(0, 0).unwrap());
+        assert_eq!(25.0, a.minor(1, 0).unwrap());
+        assert_eq!(-25.0, a.cofactor(1, 0).unwrap());
     }
 }
