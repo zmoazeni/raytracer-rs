@@ -1,9 +1,9 @@
 
+#[macro_use] pub mod util;
 pub mod canvas;
 pub mod color;
 pub mod drawable;
-pub mod matrix;
-pub mod util;
+#[macro_use] pub mod matrix;
 mod iterator;
 
 pub use canvas::*;

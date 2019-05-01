@@ -3,7 +3,7 @@ use super::util::*;
 use std::ops::{Index,IndexMut,Mul};
 use std::cmp::{PartialEq,Eq};
 
-#[allow(unused_macros)]
+#[macro_export]
 macro_rules! matrix {
     (
         $(
@@ -18,7 +18,7 @@ macro_rules! matrix {
     )
 }
 
-#[allow(unused_macros)]
+#[macro_export]
 macro_rules! tuple {
     ( $($x:expr),* ) => {
         matrix![
@@ -90,14 +90,28 @@ impl Matrix {
     }
 
     pub fn determinate(&self) -> Option<f32> {
-        if self.height != 2 && self.width != 2 {
+        if self.height != self.width {
             return None
         }
-        let a = self[(0, 0)];
-        let b = self[(0, 1)];
-        let c = self[(1, 0)];
-        let d = self[(1, 1)];
-        Some((a * d) - (b * c))
+
+        if self.height == 2 && self.width == 2 {
+            let a = self[(0, 0)];
+            let b = self[(0, 1)];
+            let c = self[(1, 0)];
+            let d = self[(1, 1)];
+            return Some((a * d) - (b * c))
+        }
+
+        let mut calculated = Some(0.0);
+        for x in 0..self.width {
+            calculated = calculated.and_then(|sum| {
+                self.cofactor(0, x).map(|cofactor| {
+                    let value = self[(0, x)];
+                    cofactor * value
+                }).map(|v| v + sum)
+            });
+        }
+        calculated
     }
 
     pub fn submatrix(&self, skip_y: usize, skip_x: usize) -> Option<Matrix> {
@@ -125,15 +139,40 @@ impl Matrix {
     }
 
     pub fn minor(&self, y: usize, x: usize) -> Option<f32> {
-        if self.height == 3 && self.width == 3 {
-            return self.submatrix(y, x).and_then(|m| m.determinate())
-        }
-        None
+        return self.submatrix(y, x).and_then(|m| m.determinate())
     }
 
     pub fn cofactor(&self, y: usize, x: usize) -> Option<f32> {
         let sign = if (y + x) % 2 == 1 { -1.0 } else { 1.0 };
         self.minor(y, x).map(|v| v * sign)
+    }
+
+    pub fn is_invertable(&self) -> bool {
+        match self.determinate() {
+            None => false,
+            Some(v) => !feq(v, 0.0)
+        }
+    }
+
+    pub fn inverse(&self) -> Option<Matrix> {
+        if !self.is_invertable() {
+            return None
+        }
+
+        match self.determinate() {
+            Some(determinate) => {
+                let mut inverse = Self::new(self.height, self.width);
+                for (y, x) in self.iter() {
+                    if let Some(cofactor) = self.cofactor(x, y) {
+                        inverse[(y, x)] = cofactor / determinate;
+                    } else {
+                        return None
+                    }
+                }
+                Some(inverse)
+            }
+            _ => None
+        }
     }
 }
 
@@ -374,6 +413,43 @@ mod test {
     }
 
     #[test]
+    fn determinate3x3() {
+        let a = matrix![
+            1.0, 2.0, 6.0;
+            -5.0, 8.0, -4.0;
+            2.0, 6.0, 4.0
+        ];
+        assert_eq!(Some(56.0), a.cofactor(0, 0));
+        assert_eq!(Some(12.0), a.cofactor(0, 1));
+        assert_eq!(Some(-46.0), a.cofactor(0, 2));
+        assert_eq!(Some(-196.0), a.determinate());
+    }
+
+    #[test]
+    fn determinate4x4() {
+        let a = matrix![
+            -2.0, -8.0, 3.0, 5.0;
+            -3.0, 1.0, 7.0, 3.0;
+            1.0, 2.0, -9.0, 6.0;
+            -6.0, 7.0, 7.0, -9.0
+        ];
+        assert_eq!(Some(690.0), a.cofactor(0, 0));
+        assert_eq!(Some(447.0), a.cofactor(0, 1));
+        assert_eq!(Some(210.0), a.cofactor(0, 2));
+        assert_eq!(Some(51.0), a.cofactor(0, 3));
+        assert_eq!(Some(-4071.0), a.determinate());
+    }
+
+    #[test]
+    fn determinate_not_square() {
+        let a = matrix![
+            -2.0, -8.0, 5.0;
+            -3.0, 1.0, 3.0;
+        ];
+        assert_eq!(None, a.determinate());
+    }
+
+    #[test]
     fn determinate_unknown() {
         assert_eq!(None, matrix![
             1.0, 2.0, 3.0
@@ -444,5 +520,52 @@ mod test {
         assert_eq!(-12.0, a.cofactor(0, 0).unwrap());
         assert_eq!(25.0, a.minor(1, 0).unwrap());
         assert_eq!(-25.0, a.cofactor(1, 0).unwrap());
+    }
+
+    #[test]
+    fn inversion1() {
+        let a = matrix![
+            6.0,  4.0,  4.0,  4.0;
+            5.0,  5.0,  7.0,  6.0;
+            4.0,  -9.0,  3.0,  -7.0;
+            9.0,  1.0,  7.0,  -6.0
+        ];
+        assert_eq!(Some(-2120.0), a.determinate());
+        assert!(a.is_invertable());
+    }
+
+    #[test]
+    fn inversion2() {
+        let a = matrix![
+            -4.0,  2.0,  -2.0,  -3.0;
+            9.0,  6.0,  2.0,  6.0;
+            0.0,  -5.0,  1.0,  -5.0;
+            0.0,  0.0,  0.0,  0.0
+        ];
+        assert_eq!(Some(0.0), a.determinate());
+        assert!(!a.is_invertable());
+    }
+
+    #[test]
+    fn inversion_calculation() {
+        let a = matrix![
+            -5.0, 2.0, 6.0, -8.0;
+            1.0, -5.0, 1.0, 8.0;
+            7.0, 7.0, -6.0, -7.0;
+            1.0, -3.0, 7.0, 4.0
+        ];
+        let b = a.inverse().unwrap();
+        assert_eq!(Some(532.0), a.determinate());
+        assert_eq!(Some(-160.0), a.cofactor(2, 3));
+        assert_feq!(-160.0/532.0, b[(3, 2)]);
+
+        assert_eq!(Some(105.0), a.cofactor(3, 2));
+        assert_feq!(105.0/532.0, b[(2, 3)]);
+        assert_eq!(matrix![
+            0.21805, 0.45113, 0.24060, -0.04511;
+            -0.80827, -1.45677, -0.44361, 0.52068;
+            -0.07895, -0.22368, -0.05263, 0.19737;
+            -0.52256, -0.81391, -0.30075, 0.30639
+        ], b);
     }
 }
