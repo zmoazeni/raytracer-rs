@@ -89,9 +89,9 @@ impl Matrix {
         m
     }
 
-    pub fn determinate(&self) -> Option<f32> {
+    pub fn determinate(&self) -> Result<f32, String> {
         if self.height != self.width {
-            return None
+            return Err(format!("Matrix must be square: {}x{}", self.height, self.width))
         }
 
         if self.height == 2 && self.width == 2 {
@@ -99,10 +99,10 @@ impl Matrix {
             let b = self[(0, 1)];
             let c = self[(1, 0)];
             let d = self[(1, 1)];
-            return Some((a * d) - (b * c))
+            return Ok((a * d) - (b * c))
         }
 
-        let mut calculated = Some(0.0);
+        let mut calculated = Ok(0.0);
         for x in 0..self.width {
             calculated = calculated.and_then(|sum| {
                 self.cofactor(0, x).map(|cofactor| {
@@ -114,9 +114,9 @@ impl Matrix {
         calculated
     }
 
-    pub fn submatrix(&self, skip_y: usize, skip_x: usize) -> Option<Matrix> {
+    pub fn submatrix(&self, skip_y: usize, skip_x: usize) -> Result<Matrix, String> {
         if skip_y >= self.height || skip_x >= self.width {
-            return None
+            return Err(format!("y:{} or x:{} is outside the matrix dimensions {}x{}", skip_y, skip_x, self.height, self.width))
         }
         let mut m = Matrix::new(self.height - 1, self.width - 1);
         for (y, x) in self.iter() {
@@ -135,43 +135,42 @@ impl Matrix {
                 m[(y2, x2)] = self[(y, x)];
             }
         }
-        Some(m)
+        Ok(m)
     }
 
-    pub fn minor(&self, y: usize, x: usize) -> Option<f32> {
-        return self.submatrix(y, x).and_then(|m| m.determinate())
+    pub fn minor(&self, y: usize, x: usize) -> Result<f32, String> {
+        return self.submatrix(y, x).and_then(|m|  m.determinate())
     }
 
-    pub fn cofactor(&self, y: usize, x: usize) -> Option<f32> {
+    pub fn cofactor(&self, y: usize, x: usize) -> Result<f32, String> {
         let sign = if (y + x) % 2 == 1 { -1.0 } else { 1.0 };
         self.minor(y, x).map(|v| v * sign)
     }
 
     pub fn is_invertable(&self) -> bool {
         match self.determinate() {
-            None => false,
-            Some(v) => !feq(v, 0.0)
+            Err(_) => false,
+            Ok(v) => !feq(v, 0.0)
         }
     }
 
-    pub fn inverse(&self) -> Option<Matrix> {
+    pub fn inverse(&self) -> Result<Matrix, String> {
         if !self.is_invertable() {
-            return None
+            return Err(String::from("Matrix is not invertable"))
         }
 
         match self.determinate() {
-            Some(determinate) => {
+            Ok(determinate) => {
                 let mut inverse = Self::new(self.height, self.width);
                 for (y, x) in self.iter() {
-                    if let Some(cofactor) = self.cofactor(x, y) {
-                        inverse[(y, x)] = cofactor / determinate;
-                    } else {
-                        return None
+                    match self.cofactor(x, y) {
+                        Ok(cofactor) => { inverse[(y, x)] = cofactor / determinate; }
+                        Err(e) => return Err(e)
                     }
                 }
-                Some(inverse)
+                Ok(inverse)
             }
-            _ => None
+            Err(e) => Err(e)
         }
     }
 }
@@ -202,10 +201,10 @@ impl PartialEq for Matrix {
 impl Eq for Matrix {}
 
 impl Mul<Matrix> for Matrix {
-    type Output = Option<Self>;
-    fn mul(self, rhs: Self) -> Option<Self> {
+    type Output = Result<Self, String>;
+    fn mul(self, rhs: Self) -> Result<Self, String> {
         if self.width != rhs.height {
-            return None;
+            return Err(format!("width of left ({}x{}) does not match height of rhs ({}x{})", self.height, self.width, rhs.height, rhs.width));
         }
 
         let mut result = Matrix::new(self.height, rhs.width);
@@ -216,7 +215,7 @@ impl Mul<Matrix> for Matrix {
             }
             result[(y, x)] = sum;
         }
-        Some(result)
+        Ok(result)
     }
 }
 
@@ -330,7 +329,7 @@ mod test {
             40.0, 58.0, 110.0, 102.0;
             16.0, 26.0, 46.0, 42.0
         ];
-        assert_eq!(Some(expected), m1 * m2);
+        assert_eq!(Ok(expected), m1 * m2);
     }
 
     #[test]
@@ -343,7 +342,7 @@ mod test {
             1.0, 2.0, 3.0;
         ];
         println!("{:?} {:?}", m1, m2);
-        assert_eq!(None, m1 * m2);
+        assert!((m1 * m2).is_err());
     }
 
     #[test]
@@ -366,7 +365,7 @@ mod test {
             33.0;
             1.0
         ];
-        assert_eq!(Some(expected), m1 * tuple);
+        assert_eq!(Ok(expected), m1 * tuple);
     }
 
     #[test]
@@ -409,7 +408,7 @@ mod test {
             1.0, 5.0;
             -3.0, 2.0
         ];
-        assert_eq!(17.0, m.determinate().unwrap());
+        assert_eq!(Ok(17.0), m.determinate());
     }
 
     #[test]
@@ -419,10 +418,10 @@ mod test {
             -5.0, 8.0, -4.0;
             2.0, 6.0, 4.0
         ];
-        assert_eq!(Some(56.0), a.cofactor(0, 0));
-        assert_eq!(Some(12.0), a.cofactor(0, 1));
-        assert_eq!(Some(-46.0), a.cofactor(0, 2));
-        assert_eq!(Some(-196.0), a.determinate());
+        assert_eq!(Ok(56.0), a.cofactor(0, 0));
+        assert_eq!(Ok(12.0), a.cofactor(0, 1));
+        assert_eq!(Ok(-46.0), a.cofactor(0, 2));
+        assert_eq!(Ok(-196.0), a.determinate());
     }
 
     #[test]
@@ -433,11 +432,11 @@ mod test {
             1.0, 2.0, -9.0, 6.0;
             -6.0, 7.0, 7.0, -9.0
         ];
-        assert_eq!(Some(690.0), a.cofactor(0, 0));
-        assert_eq!(Some(447.0), a.cofactor(0, 1));
-        assert_eq!(Some(210.0), a.cofactor(0, 2));
-        assert_eq!(Some(51.0), a.cofactor(0, 3));
-        assert_eq!(Some(-4071.0), a.determinate());
+        assert_eq!(Ok(690.0), a.cofactor(0, 0));
+        assert_eq!(Ok(447.0), a.cofactor(0, 1));
+        assert_eq!(Ok(210.0), a.cofactor(0, 2));
+        assert_eq!(Ok(51.0), a.cofactor(0, 3));
+        assert_eq!(Ok(-4071.0), a.determinate());
     }
 
     #[test]
@@ -446,14 +445,14 @@ mod test {
             -2.0, -8.0, 5.0;
             -3.0, 1.0, 3.0;
         ];
-        assert_eq!(None, a.determinate());
+        assert!(a.determinate().is_err());
     }
 
     #[test]
     fn determinate_unknown() {
-        assert_eq!(None, matrix![
+        assert!(matrix![
             1.0, 2.0, 3.0
-        ].determinate());
+        ].determinate().is_err());
     }
 
     #[test]
@@ -488,8 +487,8 @@ mod test {
             -3.0, 2.0, 7.0;
             0.0, 6.0, -3.0
         ];
-        assert_eq!(None, m.submatrix(3, 2));
-        assert_eq!(None, m.submatrix(0, 3));
+        assert!(m.submatrix(3, 2).is_err());
+        assert!(m.submatrix(0, 3).is_err());
     }
 
     #[test]
@@ -500,13 +499,13 @@ mod test {
             6.0, -1.0, 5.0
         ];
         let b = a.submatrix(1, 0).unwrap();
-        assert_eq!(25.0, b.determinate().unwrap());
-        assert_eq!(25.0, a.minor(1, 0).unwrap());
+        assert_eq!(Ok(25.0), b.determinate());
+        assert_eq!(Ok(25.0), a.minor(1, 0));
     }
 
     #[test]
     fn minor_invalid_size() {
-        assert_eq!(None, matrix![1.0, 2.0].minor(0, 0));
+        assert!(matrix![1.0, 2.0].minor(0, 0).is_err());
     }
 
     #[test]
@@ -516,10 +515,10 @@ mod test {
             2.0, -1.0, -7.0;
             6.0, -1.0, 5.0
         ];
-        assert_eq!(-12.0, a.minor(0, 0).unwrap());
-        assert_eq!(-12.0, a.cofactor(0, 0).unwrap());
-        assert_eq!(25.0, a.minor(1, 0).unwrap());
-        assert_eq!(-25.0, a.cofactor(1, 0).unwrap());
+        assert_eq!(Ok(-12.0), a.minor(0, 0));
+        assert_eq!(Ok(-12.0), a.cofactor(0, 0));
+        assert_eq!(Ok(25.0), a.minor(1, 0));
+        assert_eq!(Ok(-25.0), a.cofactor(1, 0));
     }
 
     #[test]
@@ -530,7 +529,7 @@ mod test {
             4.0,  -9.0,  3.0,  -7.0;
             9.0,  1.0,  7.0,  -6.0
         ];
-        assert_eq!(Some(-2120.0), a.determinate());
+        assert_eq!(Ok(-2120.0), a.determinate());
         assert!(a.is_invertable());
     }
 
@@ -542,7 +541,7 @@ mod test {
             0.0,  -5.0,  1.0,  -5.0;
             0.0,  0.0,  0.0,  0.0
         ];
-        assert_eq!(Some(0.0), a.determinate());
+        assert_eq!(Ok(0.0), a.determinate());
         assert!(!a.is_invertable());
     }
 
@@ -555,11 +554,11 @@ mod test {
             1.0, -3.0, 7.0, 4.0
         ];
         let b = a.inverse().unwrap();
-        assert_eq!(Some(532.0), a.determinate());
-        assert_eq!(Some(-160.0), a.cofactor(2, 3));
+        assert_eq!(Ok(532.0), a.determinate());
+        assert_eq!(Ok(-160.0), a.cofactor(2, 3));
         assert_feq!(-160.0/532.0, b[(3, 2)]);
 
-        assert_eq!(Some(105.0), a.cofactor(3, 2));
+        assert_eq!(Ok(105.0), a.cofactor(3, 2));
         assert_feq!(105.0/532.0, b[(2, 3)]);
         assert_eq!(matrix![
             0.21805, 0.45113, 0.24060, -0.04511;
