@@ -111,7 +111,17 @@ impl Matrix {
                 }).map(|v| v + sum)
             });
         }
-        calculated
+
+        match calculated {
+            Ok(x) => {
+                if feq(x, 0.0) {
+                    Err(String::from("Matrix is not invertable and can't calculate determinate"))
+                } else {
+                    Ok(x)
+                }
+            }
+            err@_ => err
+        }
     }
 
     pub fn submatrix(&self, skip_y: usize, skip_x: usize) -> Result<Matrix, String> {
@@ -148,17 +158,10 @@ impl Matrix {
     }
 
     pub fn is_invertable(&self) -> bool {
-        match self.determinate() {
-            Err(_) => false,
-            Ok(v) => !feq(v, 0.0)
-        }
+        self.determinate().is_ok()
     }
 
     pub fn inverse(&self) -> Result<Matrix, String> {
-        if !self.is_invertable() {
-            return Err(String::from("Matrix is not invertable"))
-        }
-
         match self.determinate() {
             Ok(determinate) => {
                 let mut inverse = Self::new(self.height, self.width);
@@ -541,7 +544,7 @@ mod test {
             0.0,  -5.0,  1.0,  -5.0;
             0.0,  0.0,  0.0,  0.0
         ];
-        assert_eq!(Ok(0.0), a.determinate());
+        assert!(a.determinate().is_err());
         assert!(!a.is_invertable());
     }
 
