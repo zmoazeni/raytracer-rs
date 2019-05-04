@@ -17,4 +17,8 @@ path = "example/cannon.rs"
 name = "cannon_ppm"
 path = "example/cannon_ppm.rs"
 
+[[example]]
+name = "matrices"
+path = "example/matrices.rs"
+
 [dependencies]
