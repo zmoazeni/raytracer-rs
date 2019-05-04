@@ -1,4 +1,4 @@
-extern crate raytracer;
+use raytracer;
 
 fn main() {
     println!("Hello, world!");
@@ -6,5 +6,4 @@ fn main() {
     let p = raytracer::Point::new(0.5, 1.0, 1.0);
     println!("{:?}", c);
     println!("{:?}", p);
-    println!("{}", raytracer::feq(1.0, 1.0000002));
 }

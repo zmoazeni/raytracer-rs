@@ -1,3 +1,5 @@
+use crate::util;
+
 use std::ops::Add;
 use std::ops::Sub;
 use std::ops::Mul;
@@ -167,7 +169,7 @@ impl PartialEq for Point {
     fn eq(&self, rhs: &Point) -> bool {
         let Point(x1, y1, z1) = self;
         let Point(x2, y2, z2) = rhs;
-        super::feq(*x1, *x2) && super:: feq(*y1, *y2) && super::feq(*z1, *z2)
+        util::feq(*x1, *x2) && util::feq(*y1, *y2) && util::feq(*z1, *z2)
     }
 }
 
@@ -175,7 +177,7 @@ impl PartialEq for Vector {
     fn eq(&self, rhs: &Vector) -> bool {
         let Vector(x1, y1, z1) = self;
         let Vector(x2, y2, z2) = rhs;
-        super::feq(*x1, *x2) && super:: feq(*y1, *y2) && super::feq(*z1, *z2)
+        util::feq(*x1, *x2) && util::feq(*y1, *y2) && util::feq(*z1, *z2)
     }
 }
 

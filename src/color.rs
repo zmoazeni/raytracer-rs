@@ -1,3 +1,5 @@
+use crate::util;
+
 use std::ops::Add;
 use std::ops::Sub;
 use std::ops::Mul;
@@ -41,7 +43,7 @@ impl Color {
 
 impl PartialEq for Color {
     fn eq(&self, other: &Color) -> bool {
-        super::feq(self.red, other.red) && super::feq(self.green, other.green) && super::feq(self.blue, other.blue)
+        util::feq(self.red, other.red) && util::feq(self.green, other.green) && util::feq(self.blue, other.blue)
     }
 }
 
