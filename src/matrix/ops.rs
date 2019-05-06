@@ -51,6 +51,11 @@ impl Matrix {
         id
     }
 
+    pub fn new_identity(y: usize, x: usize) -> Matrix {
+        let m = Matrix::new(y, x);
+        m.identity()
+    }
+
     pub fn transpose(&self) -> Matrix {
         let mut m = Matrix::new(self.width, self.height);
         for (y, x) in self.iter() {
@@ -73,9 +78,11 @@ impl Matrix {
         }
 
         let mut calculated = Ok(0.0);
+        let mut calculated_something = false;
         for x in 0..self.width {
             calculated = calculated.and_then(|sum| {
                 self.cofactor(0, x).map(|cofactor| {
+                    calculated_something = true;
                     let value = self[(0, x)];
                     cofactor * value
                 }).map(|v| v + sum)
@@ -84,10 +91,10 @@ impl Matrix {
 
         match calculated {
             Ok(x) => {
-                if util::feq(x, 0.0) {
-                    Err(String::from("Matrix is not invertable and can't calculate determinate"))
-                } else {
+                if calculated_something {
                     Ok(x)
+                } else {
+                    Err(String::from("Matrix is not invertable and can't calculate determinate"))
                 }
             }
             err@_ => err
@@ -119,7 +126,7 @@ impl Matrix {
     }
 
     pub fn minor(&self, y: usize, x: usize) -> Result<f32, String> {
-        return self.submatrix(y, x).and_then(|m|  m.determinate())
+        return self.submatrix(y, x).and_then(|m| m.determinate())
     }
 
     pub fn cofactor(&self, y: usize, x: usize) -> Result<f32, String> {
@@ -128,7 +135,16 @@ impl Matrix {
     }
 
     pub fn is_invertable(&self) -> bool {
-        self.determinate().is_ok()
+        match self.determinate() {
+            Ok(x) => {
+                if util::feq(x, 0.0) {
+                    false
+                } else {
+                    true
+                }
+            }
+            _ => false
+        }
     }
 
     pub fn inverse(&self) -> Result<Matrix, String> {
@@ -314,7 +330,6 @@ mod test {
         let m2 = matrix![
             1.0, 2.0, 3.0;
         ];
-        println!("{:?} {:?}", m1, m2);
         assert!((m1 * m2).is_err());
     }
 
@@ -356,6 +371,13 @@ mod test {
             0.0, 0.0, 0.0, 1.0
         ];
         assert_eq!(expected, m.identity());
+    }
+
+    #[test]
+    fn identity_inverse() {
+        let m = Matrix::new_identity(4, 4);
+        assert_eq!(Ok(1.0), m.determinate());
+        assert_eq!(Ok(m.clone()), m.inverse());
     }
 
     #[test]
@@ -514,7 +536,7 @@ mod test {
             0.0,  -5.0,  1.0,  -5.0;
             0.0,  0.0,  0.0,  0.0
         ];
-        assert!(a.determinate().is_err());
+        assert_eq!(Ok(0.0), a.determinate());
         assert!(!a.is_invertable());
     }
 
