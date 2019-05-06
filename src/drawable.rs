@@ -1,4 +1,5 @@
 use crate::util;
+use crate::matrix;
 
 use std::ops::Add;
 use std::ops::Sub;
@@ -20,6 +21,11 @@ impl Point {
     pub fn negate(&self) -> Point {
         *self * -1.0
     }
+
+    pub fn matrix(self) -> matrix::Matrix {
+        let Point(x, y, z) = self;
+        tuple![x, y, z, 1.0]
+    }
 }
 
 impl Vector {
@@ -30,6 +36,11 @@ impl Vector {
 
     pub fn negate(&self) -> Vector {
         *self * -1.0
+    }
+
+    pub fn matrix(self) -> matrix::Matrix {
+        let Vector(x, y, z) = self;
+        tuple![x, y, z, 0.0]
     }
 
     // magnitude is the distance traveled if you were to walk the vector
@@ -322,5 +333,22 @@ mod test_dot_and_cross {
         let vector2 = Vector::new(2.0, 3.0, 4.0);
         assert_eq!(vector1.cross(&vector2), Vector::new(-1.0, 2.0, -1.0));
         assert_eq!(vector2.cross(&vector1), Vector::new(1.0, -2.0, 1.0));
+    }
+}
+
+#[cfg(test)]
+mod test_as_matrix {
+    use super::*;
+
+    #[test]
+    fn point_as_matrix() {
+        let p = Point::new(-3.0, 4.0, 5.0);
+        assert_eq!(tuple![-3.0, 4.0, 5.0, 1.0], p.matrix());
+    }
+
+    #[test]
+    fn vector_as_matrix() {
+        let v = Vector::new(-3.0, 4.0, 5.0);
+        assert_eq!(tuple![-3.0, 4.0, 5.0, 0.0], v.matrix());
     }
 }

@@ -5,7 +5,7 @@ macro_rules! matrix {
             $($x:expr),+
         );* $(;)?
     ) => (
-        Matrix::with_values(
+        crate::matrix::Matrix::with_values(
             vec![$(
                 vec![$($x),*],
             )*]
