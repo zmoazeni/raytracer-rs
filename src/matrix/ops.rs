@@ -219,6 +219,34 @@ impl Mul<&Matrix> for &Matrix {
     }
 }
 
+impl Mul<Result<Matrix, String>> for Matrix {
+    type Output = Result<Matrix, String>;
+    fn mul(self, rhs: Result<Matrix, String>) -> Result<Matrix, String> {
+        rhs.and_then(|rhs| self * rhs)
+    }
+}
+
+impl Mul<Result<&Matrix, String>> for &Matrix {
+    type Output = Result<Matrix, String>;
+    fn mul(self, rhs: Result<&Matrix, String>) -> Result<Matrix, String> {
+        rhs.and_then(|rhs| self * rhs)
+    }
+}
+
+impl Mul<Matrix> for Result<Matrix, String> {
+    type Output = Result<Matrix, String>;
+    fn mul(self, rhs: Matrix) -> Result<Matrix, String> {
+        self.and_then(|lhs| lhs * rhs)
+    }
+}
+
+impl Mul<&Matrix> for Result<&Matrix, String> {
+    type Output = Result<Matrix, String>;
+    fn mul(self, rhs: &Matrix) -> Result<Matrix, String> {
+        self.and_then(|lhs| lhs * rhs)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -329,7 +357,15 @@ mod test {
             40.0, 58.0, 110.0, 102.0;
             16.0, 26.0, 46.0, 42.0
         ];
-        assert_eq!(Ok(expected), m1 * m2);
+        assert_eq!(Ok(expected.clone()), m1.clone() * m2.clone());
+        assert_eq!(Ok(expected.clone()), Ok(m1.clone()) * m2.clone());
+        assert_eq!(Ok(expected.clone()), m1.clone() * Ok(m2.clone()));
+
+        let r = &m1 * Ok(&m2);
+        assert_eq!(Ok(expected.clone()), r);
+
+        let r = Ok(&m1) * &m2;
+        assert_eq!(Ok(expected.clone()), r);
     }
 
     #[test]
@@ -625,7 +661,7 @@ mod test {
             6.0, -2.0, 0.0, 5.0
         ];
 
-        let c = (&a * &b).unwrap();
-        assert_eq!(a, (c * b.inverse().unwrap()).unwrap());
+        let c = &a * &b;
+        assert_eq!(Ok(a), c.and_then(|c| c * b.inverse()));
     }
 }
