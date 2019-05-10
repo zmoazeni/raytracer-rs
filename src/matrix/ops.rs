@@ -189,22 +189,33 @@ impl PartialEq for Matrix {
 }
 impl Eq for Matrix {}
 
+fn matrix_mul_helper(lhs: &Matrix, rhs: &Matrix) -> Result<Matrix, String> {
+    if lhs.width != rhs.height {
+        return Err(format!("width of left ({}x{}) does not match height of rhs ({}x{})", lhs.height, lhs.width, rhs.height, rhs.width));
+    }
+
+    let mut result = Matrix::new(lhs.height, rhs.width);
+    for (y, x) in result.iter() {
+        let mut sum = 0.0;
+        for i in 0..lhs.width {
+            sum += lhs[(y, i)] * rhs[(i, x)];
+        }
+        result[(y, x)] = sum;
+    }
+    Ok(result)
+}
+
 impl Mul<Matrix> for Matrix {
     type Output = Result<Self, String>;
     fn mul(self, rhs: Self) -> Result<Self, String> {
-        if self.width != rhs.height {
-            return Err(format!("width of left ({}x{}) does not match height of rhs ({}x{})", self.height, self.width, rhs.height, rhs.width));
-        }
+        matrix_mul_helper(&self, &rhs)
+    }
+}
 
-        let mut result = Matrix::new(self.height, rhs.width);
-        for (y, x) in result.iter() {
-            let mut sum = 0.0;
-            for i in 0..self.width {
-                sum += self[(y, i)] * rhs[(i, x)];
-            }
-            result[(y, x)] = sum;
-        }
-        Ok(result)
+impl Mul<&Matrix> for &Matrix {
+    type Output = Result<Matrix, String>;
+    fn mul(self, rhs: &Matrix) -> Result<Matrix, String> {
+        matrix_mul_helper(self, rhs)
     }
 }
 
@@ -377,7 +388,8 @@ mod test {
     fn identity_inverse() {
         let m = Matrix::new_identity(4, 4);
         assert_eq!(Ok(1.0), m.determinate());
-        assert_eq!(Ok(m.clone()), m.inverse());
+        let inverse = m.inverse();
+        assert_eq!(Ok(m), inverse);
     }
 
     #[test]
@@ -613,7 +625,7 @@ mod test {
             6.0, -2.0, 0.0, 5.0
         ];
 
-        let c = (a.clone() * b.clone()).unwrap();
+        let c = (&a * &b).unwrap();
         assert_eq!(a, (c * b.inverse().unwrap()).unwrap());
     }
 }
