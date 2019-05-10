@@ -9,16 +9,4 @@ license = "MIT"
 name = "raytracer"
 path = "src/lib.rs"
 
-[[example]]
-name = "cannon"
-path = "example/cannon.rs"
-
-[[example]]
-name = "cannon_ppm"
-path = "example/cannon_ppm.rs"
-
-[[example]]
-name = "matrices"
-path = "example/matrices.rs"
-
 [dependencies]
