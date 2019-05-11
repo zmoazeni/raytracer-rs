@@ -23,6 +23,42 @@ impl Matrix {
             0.0,      0.0,      0.0,      1.0
         ]
     }
+
+    pub fn rotation_x<T: Into<f32>>(radians: T) -> Matrix {
+        let radians = radians.into();
+        let sin = radians.sin();
+        let cos = radians.cos();
+        matrix![
+            1.0, 0.0, 0.0,        0.0;
+            0.0, cos, -1.0 * sin, 0.0;
+            0.0, sin, cos,        0.0;
+            0.0, 0.0, 0.0,        1.0
+        ]
+    }
+
+    pub fn rotation_y<T: Into<f32>>(radians: T) -> Matrix {
+        let radians = radians.into();
+        let sin = radians.sin();
+        let cos = radians.cos();
+        matrix![
+            cos,        0.0, sin, 0.0;
+            0.0,        1.0, 0.0, 0.0;
+            -1.0 * sin, 0.0, cos, 0.0;
+            0.0,        0.0, 0.0, 1.0
+        ]
+    }
+
+    pub fn rotation_z<T: Into<f32>>(radians: T) -> Matrix {
+        let radians = radians.into();
+        let sin = radians.sin();
+        let cos = radians.cos();
+        matrix![
+            cos, -1.0 * sin, 0.0, 0.0;
+            sin, cos,        0.0, 0.0;
+            0.0, 0.0,        1.0, 0.0;
+            0.0, 0.0,        0.0, 1.0
+        ]
+    }
 }
 
 impl Mul<Point> for Matrix {
@@ -65,6 +101,7 @@ impl Mul<Vector> for Result<Matrix, String> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::f32::consts::PI;
 
     #[test]
     fn translation() {
@@ -127,5 +164,41 @@ mod test {
         let p = Point::new(2.0, 3.0, 4.0);
         let s = Matrix::scale(-1.0, 1.0, 1.0);
         assert_eq!(Ok(Point::new(-2.0, 3.0, 4.0)), s * p);
+    }
+
+    #[test]
+    fn rotating_point_around_x_axis_regular() {
+        let p = Point::new(0.0, 1.0, 0.0);
+        let half_quarter = Matrix::rotation_x(PI / 4.0);
+        let full_quarter = Matrix::rotation_x(PI / 2.0);
+        assert_eq!(Ok(Point::new(0.0, 2.0_f32.sqrt() / 2.0, 2.0_f32.sqrt() / 2.0)), half_quarter * p);
+        assert_eq!(Ok(Point::new(0.0, 0.0, 1.0)), full_quarter * p);
+    }
+
+    #[test]
+    fn rotating_point_around_x_axis_inverse() {
+        let p = Point::new(0.0, 1.0, 0.0);
+        let half_quarter = Matrix::rotation_x(PI / 4.0);
+        assert_eq!(Ok(Point::new(0.0, 2.0_f32.sqrt() / 2.0, -1.0 * (2.0_f32.sqrt() / 2.0))), half_quarter.inverse() * p);
+    }
+
+    #[test]
+    fn rotating_point_around_y_axis() {
+        let p = Point::new(0.0, 0.0, 1.0);
+        let half_quarter = Matrix::rotation_y(PI / 4.0);
+        let full_quarter = Matrix::rotation_y(PI / 2.0);
+        assert_eq!(Ok(Point::new(2.0_f32.sqrt() / 2.0, 0.0, 2.0_f32.sqrt() / 2.0)), half_quarter * p);
+        assert_eq!(Ok(Point::new(1.0, 0.0, 0.0)), full_quarter * p);
+
+    }
+
+    #[test]
+    fn rotating_point_around_z_axis() {
+        let p = Point::new(0.0, 1.0, 0.0);
+        let half_quarter = Matrix::rotation_z(PI / 4.0);
+        let full_quarter = Matrix::rotation_z(PI / 2.0);
+        assert_eq!(Ok(Point::new(-1.0 * (2.0_f32.sqrt() / 2.0), 2.0_f32.sqrt() / 2.0, 0.0)), half_quarter * p);
+        assert_eq!(Ok(Point::new(-1.0, 0.0, 0.0)), full_quarter * p);
+
     }
 }
