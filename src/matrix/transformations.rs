@@ -12,6 +12,15 @@ impl Matrix {
             0.0, 0.0, 0.0, 1.0
         ]
     }
+
+    pub fn scale(x: f32, y: f32, z: f32) -> Matrix {
+        matrix![
+            x,   0.0, 0.0, 0.0;
+            0.0, y,   0.0, 0.0;
+            0.0, 0.0, z,   0.0;
+            0.0, 0.0, 0.0, 1.0
+        ]
+    }
 }
 
 impl Mul<drawable::Point> for Matrix {
@@ -74,5 +83,26 @@ mod test {
         let t = Matrix::translation(5.0, -3.0, 2.0).inverse().unwrap();
         let v = drawable::Vector::new(-3.0, 4.0, 5.0);
         assert_eq!(Ok(v), t * v);
+    }
+
+    #[test]
+    fn scaling_point() {
+        let s = Matrix::scale(2.0, 3.0, 4.0);
+        let p = drawable::Point::new(-4.0, 6.0, 8.0);
+        assert_eq!(Ok(drawable::Point::new(-8.0, 18.0, 32.0)), s * p);
+    }
+
+    #[test]
+    fn scaling_vector() {
+        let s = Matrix::scale(2.0, 3.0, 4.0);
+        let v = drawable::Vector::new(-4.0, 6.0, 8.0);
+        assert_eq!(Ok(drawable::Vector::new(-8.0, 18.0, 32.0)), s * v);
+    }
+
+    #[test]
+    fn scaling_vector_inverse() {
+        let s = Matrix::scale(2.0, 3.0, 4.0).inverse().unwrap();
+        let v = drawable::Vector::new(-4.0, 6.0, 8.0);
+        assert_eq!(Ok(drawable::Vector::new(-2.0, 2.0, 2.0)), s * v);
     }
 }
