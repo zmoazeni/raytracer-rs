@@ -4,21 +4,23 @@ use crate::drawable;
 use std::ops::Mul;
 
 impl Matrix {
-    pub fn translation(x: f32, y: f32, z: f32) -> Matrix {
+    pub fn translation<X, Y, Z>(x: X, y: Y, z: Z) -> Matrix
+        where X: Into<f32>, Y: Into<f32>, Z: Into<f32> {
         matrix![
-            1.0, 0.0, 0.0, x;
-            0.0, 1.0, 0.0, y;
-            0.0, 0.0, 1.0, z;
+            1.0, 0.0, 0.0, x.into();
+            0.0, 1.0, 0.0, y.into();
+            0.0, 0.0, 1.0, z.into();
             0.0, 0.0, 0.0, 1.0
         ]
     }
 
-    pub fn scale(x: f32, y: f32, z: f32) -> Matrix {
+    pub fn scale<X, Y, Z>(x: X, y: Y, z: Z) -> Matrix
+        where X: Into<f32>, Y: Into<f32>, Z: Into<f32> {
         matrix![
-            x,   0.0, 0.0, 0.0;
-            0.0, y,   0.0, 0.0;
-            0.0, 0.0, z,   0.0;
-            0.0, 0.0, 0.0, 1.0
+            x.into(), 0.0,      0.0,      0.0;
+            0.0,      y.into(), 0.0,      0.0;
+            0.0,      0.0,      z.into(), 0.0;
+            0.0,      0.0,      0.0,      1.0
         ]
     }
 }
