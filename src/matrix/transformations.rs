@@ -120,4 +120,12 @@ mod test {
         let v = Vector::new(-4.0, 6.0, 8.0);
         assert_eq!(Ok(Vector::new(-2.0, 2.0, 2.0)), s * v);
     }
+
+    #[test]
+    fn scaling_point_reflection() {
+        // scaling a point by a negative value flips the axis
+        let p = Point::new(2.0, 3.0, 4.0);
+        let s = Matrix::scale(-1.0, 1.0, 1.0);
+        assert_eq!(Ok(Point::new(-2.0, 3.0, 4.0)), s * p);
+    }
 }
