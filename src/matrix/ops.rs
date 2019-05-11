@@ -207,44 +207,32 @@ fn matrix_mul_helper(lhs: &Matrix, rhs: &Matrix) -> Result<Matrix, String> {
 
 impl Mul<Matrix> for Matrix {
     type Output = Result<Self, String>;
-    fn mul(self, rhs: Self) -> Result<Self, String> {
-        matrix_mul_helper(&self, &rhs)
-    }
+    fn mul(self, rhs: Self) -> Self::Output { matrix_mul_helper(&self, &rhs) }
 }
 
 impl Mul<&Matrix> for &Matrix {
     type Output = Result<Matrix, String>;
-    fn mul(self, rhs: &Matrix) -> Result<Matrix, String> {
-        matrix_mul_helper(self, rhs)
-    }
+    fn mul(self, rhs: &Matrix) -> Self::Output { matrix_mul_helper(self, rhs) }
 }
 
 impl Mul<Result<Matrix, String>> for Matrix {
     type Output = Result<Matrix, String>;
-    fn mul(self, rhs: Result<Matrix, String>) -> Result<Matrix, String> {
-        rhs.and_then(|rhs| self * rhs)
-    }
+    fn mul(self, rhs: Result<Matrix, String>) -> Self::Output { rhs.and_then(|rhs| self * rhs) }
 }
 
 impl Mul<Result<&Matrix, String>> for &Matrix {
     type Output = Result<Matrix, String>;
-    fn mul(self, rhs: Result<&Matrix, String>) -> Result<Matrix, String> {
-        rhs.and_then(|rhs| self * rhs)
-    }
+    fn mul(self, rhs: Result<&Matrix, String>) -> Self::Output { rhs.and_then(|rhs| self * rhs) }
 }
 
 impl Mul<Matrix> for Result<Matrix, String> {
     type Output = Result<Matrix, String>;
-    fn mul(self, rhs: Matrix) -> Result<Matrix, String> {
-        self.and_then(|lhs| lhs * rhs)
-    }
+    fn mul(self, rhs: Matrix) -> Self::Output { self.and_then(|lhs| lhs * rhs) }
 }
 
 impl Mul<&Matrix> for Result<&Matrix, String> {
     type Output = Result<Matrix, String>;
-    fn mul(self, rhs: &Matrix) -> Result<Matrix, String> {
-        self.and_then(|lhs| lhs * rhs)
-    }
+    fn mul(self, rhs: &Matrix) -> Self::Output { self.and_then(|lhs| lhs * rhs) }
 }
 
 #[cfg(test)]

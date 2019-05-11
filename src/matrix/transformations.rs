@@ -16,7 +16,7 @@ impl Matrix {
 
 impl Mul<drawable::Point> for Matrix {
     type Output = Result<drawable::Point, String>;
-    fn mul(self, rhs: drawable::Point) -> Result<drawable::Point, String> {
+    fn mul(self, rhs: drawable::Point) -> Self::Output {
         match self * rhs.matrix() {
             Err(e) => Err(e),
             Ok(matrix) => {
@@ -28,7 +28,7 @@ impl Mul<drawable::Point> for Matrix {
 
 impl Mul<drawable::Vector> for Matrix {
     type Output = Result<drawable::Vector, String>;
-    fn mul(self, rhs: drawable::Vector) -> Result<drawable::Vector, String> {
+    fn mul(self, rhs: drawable::Vector) -> Self::Output {
         match self * rhs.matrix() {
             Err(e) => Err(e),
             Ok(matrix) => {
