@@ -59,6 +59,15 @@ impl Matrix {
             0.0, 0.0,        0.0, 1.0
         ]
     }
+
+    pub fn shear(xy: f32, xz: f32, yx: f32, yz: f32, zx: f32, zy: f32) -> Matrix {
+        matrix![
+            1.0, xy,  xz,  0.0;
+            yx,  1.0, yz,  0.0;
+            zx,  zy,  1.0, 0.0;
+            0.0, 0.0, 0.0, 1.0
+        ]
+    }
 }
 
 impl Mul<Point> for Matrix {
@@ -200,5 +209,47 @@ mod test {
         assert_eq!(Ok(Point::new(-1.0 * (2.0_f32.sqrt() / 2.0), 2.0_f32.sqrt() / 2.0, 0.0)), half_quarter * p);
         assert_eq!(Ok(Point::new(-1.0, 0.0, 0.0)), full_quarter * p);
 
+    }
+
+    #[test]
+    fn shearing_x_by_y() {
+        let p = Point::new(2.0, 3.0, 4.0);
+        let s = Matrix::shear(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        assert_eq!(Ok(Point::new(5.0, 3.0, 4.0)), s * p);
+    }
+
+    #[test]
+    fn shearing_x_by_z() {
+        let p = Point::new(2.0, 3.0, 4.0);
+        let s = Matrix::shear(0.0, 1.0, 0.0, 0.0, 0.0, 0.0);
+        assert_eq!(Ok(Point::new(6.0, 3.0, 4.0)), s * p);
+    }
+
+    #[test]
+    fn shearing_y_by_x() {
+        let p = Point::new(2.0, 3.0, 4.0);
+        let s = Matrix::shear(0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+        assert_eq!(Ok(Point::new(2.0, 5.0, 4.0)), s * p);
+    }
+
+    #[test]
+    fn shearing_y_by_z() {
+        let p = Point::new(2.0, 3.0, 4.0);
+        let s = Matrix::shear(0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        assert_eq!(Ok(Point::new(2.0, 7.0, 4.0)), s * p);
+    }
+
+    #[test]
+    fn shearing_z_by_x() {
+        let p = Point::new(2.0, 3.0, 4.0);
+        let s = Matrix::shear(0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+        assert_eq!(Ok(Point::new(2.0, 3.0, 6.0)), s * p);
+    }
+
+    #[test]
+    fn shearing_z_by_6() {
+        let p = Point::new(2.0, 3.0, 4.0);
+        let s = Matrix::shear(0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+        assert_eq!(Ok(Point::new(2.0, 3.0, 7.0)), s * p);
     }
 }
