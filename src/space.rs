@@ -12,6 +12,7 @@ pub struct Point(pub f32, pub f32, pub f32);
 #[derive(Debug, Copy, Clone)]
 pub struct Vector(pub f32, pub f32, pub f32);
 
+
 impl Point {
     pub fn new<X, Y, Z>(x: X, y: Y, z: Z) -> Point
         where X: Into<f32>, Y: Into<f32>, Z: Into<f32> {
