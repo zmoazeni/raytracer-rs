@@ -1,10 +1,11 @@
-#[macro_use] mod util;
-#[macro_use] mod matrix;
+#[macro_use] mod macros;
 
 mod canvas;
 mod color;
 mod iterator;
+mod matrix;
 mod space;
+mod util;
 
 pub use canvas::*;
 pub use color::*;

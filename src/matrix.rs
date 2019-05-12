@@ -1,9 +1,6 @@
-#[macro_use] mod macros;
-
 mod ops;
 mod transformations;
 
-pub use macros::*;
 pub use ops::*;
 pub use transformations::*;
 
