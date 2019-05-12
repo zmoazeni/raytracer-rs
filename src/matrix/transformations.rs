@@ -107,6 +107,13 @@ impl Mul<Point> for Result<Matrix, String> {
     }
 }
 
+impl Mul<Result<Point, String>> for Matrix {
+    type Output = Result<Point, String>;
+    fn mul(self, rhs: Result<Point, String>) -> Self::Output {
+        rhs.and_then(|rhs| self * rhs)
+    }
+}
+
 impl Mul<Vector> for Matrix {
     type Output = Result<Vector, String>;
     fn mul(self, rhs: Vector) -> Self::Output {
@@ -122,6 +129,13 @@ impl Mul<Vector> for Result<Matrix, String> {
     type Output = Result<Vector, String>;
     fn mul(self, rhs: Vector) -> Self::Output {
         self.and_then(|lhs| lhs * rhs)
+    }
+}
+
+impl Mul<Result<Vector, String>> for Matrix {
+    type Output = Result<Vector, String>;
+    fn mul(self, rhs: Result<Vector, String>) -> Self::Output {
+        rhs.and_then(|rhs| self * rhs)
     }
 }
 
@@ -269,5 +283,27 @@ mod test {
         let p = Point::new(2.0, 3.0, 4.0);
         let s = Matrix::shear(Shear::ZY);
         assert_eq!(Ok(Point::new(2.0, 3.0, 7.0)), s * p);
+    }
+
+    #[test]
+    fn chaining_transformations() {
+        let p = Point::new(1.0, 0.0, 1.0);
+        let a = Matrix::rotation_x(PI / 2.0);
+        let b = Matrix::scale(5.0, 5.0, 5.0);
+        let c = Matrix::translation(10.0, 5.0, 7.0);
+
+        let p2 = a.clone() * p;
+        assert_eq!(Ok(Point::new(1.0, -1.0, 0.0)), p2);
+
+        let p3 = b.clone() * p2;
+        assert_eq!(Ok(Point::new(5.0, -5.0, 0.0)), p3);
+
+        let p4 = c.clone() * p3;
+        let expected = Ok(Point::new(15.0, 0.0, 7.0));
+        assert_eq!(expected, p4);
+
+        let combined = c * b * a;
+        assert_eq!(expected, combined * p);
+
     }
 }
