@@ -3,6 +3,15 @@ use crate::space::{Point,Vector};
 
 use std::ops::Mul;
 
+pub enum Shear {
+    XY,
+    XZ,
+    YX,
+    YZ,
+    ZX,
+    ZY
+}
+
 impl Matrix {
     pub fn translation<X, Y, Z>(x: X, y: Y, z: Z) -> Matrix
         where X: Into<f32>, Y: Into<f32>, Z: Into<f32> {
@@ -60,7 +69,16 @@ impl Matrix {
         ]
     }
 
-    pub fn shear(xy: f32, xz: f32, yx: f32, yz: f32, zx: f32, zy: f32) -> Matrix {
+    pub fn shear(relation: Shear) -> Matrix {
+        let (xy, xz, yx, yz, zx, zy) = match relation {
+            Shear::XY => (1.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+            Shear::XZ => (0.0, 1.0, 0.0, 0.0, 0.0, 0.0),
+            Shear::YX => (0.0, 0.0, 1.0, 0.0, 0.0, 0.0),
+            Shear::YZ => (0.0, 0.0, 0.0, 1.0, 0.0, 0.0),
+            Shear::ZX => (0.0, 0.0, 0.0, 0.0, 1.0, 0.0),
+            Shear::ZY => (0.0, 0.0, 0.0, 0.0, 0.0, 1.0),
+        };
+
         matrix![
             1.0, xy,  xz,  0.0;
             yx,  1.0, yz,  0.0;
@@ -214,42 +232,42 @@ mod test {
     #[test]
     fn shearing_x_by_y() {
         let p = Point::new(2.0, 3.0, 4.0);
-        let s = Matrix::shear(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let s = Matrix::shear(Shear::XY);
         assert_eq!(Ok(Point::new(5.0, 3.0, 4.0)), s * p);
     }
 
     #[test]
     fn shearing_x_by_z() {
         let p = Point::new(2.0, 3.0, 4.0);
-        let s = Matrix::shear(0.0, 1.0, 0.0, 0.0, 0.0, 0.0);
+        let s = Matrix::shear(Shear::XZ);
         assert_eq!(Ok(Point::new(6.0, 3.0, 4.0)), s * p);
     }
 
     #[test]
     fn shearing_y_by_x() {
         let p = Point::new(2.0, 3.0, 4.0);
-        let s = Matrix::shear(0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+        let s = Matrix::shear(Shear::YX);
         assert_eq!(Ok(Point::new(2.0, 5.0, 4.0)), s * p);
     }
 
     #[test]
     fn shearing_y_by_z() {
         let p = Point::new(2.0, 3.0, 4.0);
-        let s = Matrix::shear(0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        let s = Matrix::shear(Shear::YZ);
         assert_eq!(Ok(Point::new(2.0, 7.0, 4.0)), s * p);
     }
 
     #[test]
     fn shearing_z_by_x() {
         let p = Point::new(2.0, 3.0, 4.0);
-        let s = Matrix::shear(0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+        let s = Matrix::shear(Shear::ZX);
         assert_eq!(Ok(Point::new(2.0, 3.0, 6.0)), s * p);
     }
 
     #[test]
     fn shearing_z_by_6() {
         let p = Point::new(2.0, 3.0, 4.0);
-        let s = Matrix::shear(0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+        let s = Matrix::shear(Shear::ZY);
         assert_eq!(Ok(Point::new(2.0, 3.0, 7.0)), s * p);
     }
 }
