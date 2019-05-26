@@ -1,19 +1,27 @@
 use crate::util;
 
 use std::ops::Add;
-use std::ops::Sub;
 use std::ops::Mul;
+use std::ops::Sub;
 
-#[derive(Debug,Copy,Clone)]
-pub struct Color { red: f32, green: f32, blue: f32 }
+#[derive(Debug, Copy, Clone)]
+pub struct Color {
+    red: f32,
+    green: f32,
+    blue: f32,
+}
 
 impl Color {
     pub fn new(red: f32, green: f32, blue: f32) -> Color {
         Color { red, green, blue }
     }
 
-    pub fn white() -> Color { Self::new(1.0, 1.0, 1.0) }
-    pub fn black() -> Color { Self::new(0.0, 0.0, 0.0) }
+    pub fn white() -> Color {
+        Self::new(1.0, 1.0, 1.0)
+    }
+    pub fn black() -> Color {
+        Self::new(0.0, 0.0, 0.0)
+    }
 
     pub fn to_256(f: f32) -> u16 {
         let mut f = f;
@@ -26,24 +34,28 @@ impl Color {
     }
 
     pub fn ppm(&self) -> String {
-        format!("{} {} {}",
+        format!(
+            "{} {} {}",
             Self::to_256(self.red),
             Self::to_256(self.green),
-            Self::to_256(self.blue))
+            Self::to_256(self.blue)
+        )
     }
 
     pub fn ppm_parts(&self) -> Vec<String> {
         vec![
             Self::to_256(self.red).to_string(),
             Self::to_256(self.green).to_string(),
-            Self::to_256(self.blue).to_string()
+            Self::to_256(self.blue).to_string(),
         ]
     }
 }
 
 impl PartialEq for Color {
     fn eq(&self, other: &Color) -> bool {
-        util::feq(self.red, other.red) && util::feq(self.green, other.green) && util::feq(self.blue, other.blue)
+        util::feq(self.red, other.red)
+            && util::feq(self.green, other.green)
+            && util::feq(self.blue, other.blue)
     }
 }
 
@@ -53,7 +65,11 @@ impl Add for Color {
     type Output = Color;
 
     fn add(self, rhs: Color) -> Color {
-        Color::new(self.red + rhs.red, self.green + rhs.green, self.blue + rhs.blue)
+        Color::new(
+            self.red + rhs.red,
+            self.green + rhs.green,
+            self.blue + rhs.blue,
+        )
     }
 }
 
@@ -61,7 +77,11 @@ impl Sub for Color {
     type Output = Color;
 
     fn sub(self, rhs: Color) -> Color {
-        Color::new(self.red - rhs.red, self.green - rhs.green, self.blue - rhs.blue)
+        Color::new(
+            self.red - rhs.red,
+            self.green - rhs.green,
+            self.blue - rhs.blue,
+        )
     }
 }
 
@@ -77,7 +97,11 @@ impl Mul for Color {
     type Output = Color;
 
     fn mul(self, rhs: Color) -> Color {
-        Color::new(self.red * rhs.red, self.green * rhs.green, self.blue * rhs.blue)
+        Color::new(
+            self.red * rhs.red,
+            self.green * rhs.green,
+            self.blue * rhs.blue,
+        )
     }
 }
 

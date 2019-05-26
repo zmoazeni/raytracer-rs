@@ -1,10 +1,10 @@
-use crate::util;
 use crate::matrix;
+use crate::util;
 
 use std::ops::Add;
-use std::ops::Sub;
-use std::ops::Mul;
 use std::ops::Div;
+use std::ops::Mul;
+use std::ops::Sub;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point(pub f32, pub f32, pub f32);
@@ -12,10 +12,13 @@ pub struct Point(pub f32, pub f32, pub f32);
 #[derive(Debug, Copy, Clone)]
 pub struct Vector(pub f32, pub f32, pub f32);
 
-
 impl Point {
     pub fn new<X, Y, Z>(x: X, y: Y, z: Z) -> Point
-        where X: Into<f32>, Y: Into<f32>, Z: Into<f32> {
+    where
+        X: Into<f32>,
+        Y: Into<f32>,
+        Z: Into<f32>,
+    {
         Point(x.into(), y.into(), z.into())
     }
 
@@ -31,7 +34,11 @@ impl Point {
 
 impl Vector {
     pub fn new<X, Y, Z>(x: X, y: Y, z: Z) -> Vector
-        where X: Into<f32>, Y: Into<f32>, Z: Into<f32> {
+    where
+        X: Into<f32>,
+        Y: Into<f32>,
+        Z: Into<f32>,
+    {
         Vector(x.into(), y.into(), z.into())
     }
 
@@ -62,7 +69,7 @@ impl Vector {
     pub fn dot(&self, rhs: &Vector) -> f32 {
         let Vector(x1, y1, z1) = self;
         let Vector(x2, y2, z2) = rhs;
-        return (x1 * x2) + (y1 * y2) + (z1 * z2)
+        return (x1 * x2) + (y1 * y2) + (z1 * z2);
     }
 
     // Finds new vector perpendicular to two vectors
@@ -72,7 +79,7 @@ impl Vector {
         Self::new(
             (y1 * z2) - (z1 * y2),
             (z1 * x2) - (x1 * z2),
-            (x1 * y2) - (y1 * x2)
+            (x1 * y2) - (y1 * x2),
         )
     }
 }
@@ -195,7 +202,6 @@ impl PartialEq for Vector {
 
 impl Eq for Point {}
 impl Eq for Vector {}
-
 
 #[cfg(test)]
 mod test_add {

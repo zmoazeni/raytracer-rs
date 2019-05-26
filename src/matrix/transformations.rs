@@ -1,5 +1,5 @@
 use super::*;
-use crate::space::{Point,Vector};
+use crate::space::{Point, Vector};
 
 use std::ops::Mul;
 
@@ -9,12 +9,16 @@ pub enum Shear {
     YX,
     YZ,
     ZX,
-    ZY
+    ZY,
 }
 
 impl Matrix {
     pub fn translation<X, Y, Z>(x: X, y: Y, z: Z) -> Matrix
-        where X: Into<f32>, Y: Into<f32>, Z: Into<f32> {
+    where
+        X: Into<f32>,
+        Y: Into<f32>,
+        Z: Into<f32>,
+    {
         matrix![
             1.0, 0.0, 0.0, x.into();
             0.0, 1.0, 0.0, y.into();
@@ -24,7 +28,11 @@ impl Matrix {
     }
 
     pub fn scale<X, Y, Z>(x: X, y: Y, z: Z) -> Matrix
-        where X: Into<f32>, Y: Into<f32>, Z: Into<f32> {
+    where
+        X: Into<f32>,
+        Y: Into<f32>,
+        Z: Into<f32>,
+    {
         matrix![
             x.into(), 0.0,      0.0,      0.0;
             0.0,      y.into(), 0.0,      0.0;
@@ -93,9 +101,7 @@ impl Mul<Point> for Matrix {
     fn mul(self, rhs: Point) -> Self::Output {
         match self * rhs.matrix() {
             Err(e) => Err(e),
-            Ok(matrix) => {
-                Ok(Point::new(matrix[(0, 0)], matrix[(1, 0)], matrix[(2, 0)]))
-            }
+            Ok(matrix) => Ok(Point::new(matrix[(0, 0)], matrix[(1, 0)], matrix[(2, 0)])),
         }
     }
 }
@@ -119,9 +125,7 @@ impl Mul<Vector> for Matrix {
     fn mul(self, rhs: Vector) -> Self::Output {
         match self * rhs.matrix() {
             Err(e) => Err(e),
-            Ok(matrix) => {
-                Ok(Vector::new(matrix[(0, 0)], matrix[(1, 0)], matrix[(2, 0)]))
-            }
+            Ok(matrix) => Ok(Vector::new(matrix[(0, 0)], matrix[(1, 0)], matrix[(2, 0)])),
         }
     }
 }
@@ -147,12 +151,15 @@ mod test {
     #[test]
     fn translation() {
         let t = Matrix::translation(5.0, -3.0, 2.0);
-        assert_eq!(matrix![
-            1.0, 0.0, 0.0, 5.0;
-            0.0, 1.0, 0.0, -3.0;
-            0.0, 0.0, 1.0, 2.0;
-            0.0, 0.0, 0.0, 1.0
-        ], t);
+        assert_eq!(
+            matrix![
+                1.0, 0.0, 0.0, 5.0;
+                0.0, 1.0, 0.0, -3.0;
+                0.0, 0.0, 1.0, 2.0;
+                0.0, 0.0, 0.0, 1.0
+            ],
+            t
+        );
 
         assert!(t.is_invertable())
     }
@@ -212,7 +219,10 @@ mod test {
         let p = Point::new(0.0, 1.0, 0.0);
         let half_quarter = Matrix::rotation_x(PI / 4.0);
         let full_quarter = Matrix::rotation_x(PI / 2.0);
-        assert_eq!(Ok(Point::new(0.0, 2.0_f32.sqrt() / 2.0, 2.0_f32.sqrt() / 2.0)), half_quarter * p);
+        assert_eq!(
+            Ok(Point::new(0.0, 2.0_f32.sqrt() / 2.0, 2.0_f32.sqrt() / 2.0)),
+            half_quarter * p
+        );
         assert_eq!(Ok(Point::new(0.0, 0.0, 1.0)), full_quarter * p);
     }
 
@@ -220,7 +230,14 @@ mod test {
     fn rotating_point_around_x_axis_inverse() {
         let p = Point::new(0.0, 1.0, 0.0);
         let half_quarter = Matrix::rotation_x(PI / 4.0);
-        assert_eq!(Ok(Point::new(0.0, 2.0_f32.sqrt() / 2.0, -1.0 * (2.0_f32.sqrt() / 2.0))), half_quarter.inverse() * p);
+        assert_eq!(
+            Ok(Point::new(
+                0.0,
+                2.0_f32.sqrt() / 2.0,
+                -1.0 * (2.0_f32.sqrt() / 2.0)
+            )),
+            half_quarter.inverse() * p
+        );
     }
 
     #[test]
@@ -228,9 +245,11 @@ mod test {
         let p = Point::new(0.0, 0.0, 1.0);
         let half_quarter = Matrix::rotation_y(PI / 4.0);
         let full_quarter = Matrix::rotation_y(PI / 2.0);
-        assert_eq!(Ok(Point::new(2.0_f32.sqrt() / 2.0, 0.0, 2.0_f32.sqrt() / 2.0)), half_quarter * p);
+        assert_eq!(
+            Ok(Point::new(2.0_f32.sqrt() / 2.0, 0.0, 2.0_f32.sqrt() / 2.0)),
+            half_quarter * p
+        );
         assert_eq!(Ok(Point::new(1.0, 0.0, 0.0)), full_quarter * p);
-
     }
 
     #[test]
@@ -238,9 +257,15 @@ mod test {
         let p = Point::new(0.0, 1.0, 0.0);
         let half_quarter = Matrix::rotation_z(PI / 4.0);
         let full_quarter = Matrix::rotation_z(PI / 2.0);
-        assert_eq!(Ok(Point::new(-1.0 * (2.0_f32.sqrt() / 2.0), 2.0_f32.sqrt() / 2.0, 0.0)), half_quarter * p);
+        assert_eq!(
+            Ok(Point::new(
+                -1.0 * (2.0_f32.sqrt() / 2.0),
+                2.0_f32.sqrt() / 2.0,
+                0.0
+            )),
+            half_quarter * p
+        );
         assert_eq!(Ok(Point::new(-1.0, 0.0, 0.0)), full_quarter * p);
-
     }
 
     #[test]
@@ -304,6 +329,5 @@ mod test {
 
         let combined = c * b * a;
         assert_eq!(expected, combined * p);
-
     }
 }

@@ -1,12 +1,12 @@
 extern crate rand;
 
+use crate::space::{Point, Vector};
 use crate::util;
-use crate::space::{Point,Vector};
 
 use rand::Rng;
 use std::ops::Index;
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Ray {
     pub origin: Point,
     pub direction: Vector,
@@ -14,7 +14,7 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Point, direction: Vector) -> Ray {
-        Ray{origin, direction}
+        Ray { origin, direction }
     }
 
     pub fn position<T: Into<f32>>(&self, t: T) -> Point {
@@ -22,15 +22,17 @@ impl Ray {
     }
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Sphere {
-    id: i32
+    id: i32,
 }
 
 impl Sphere {
     pub fn new() -> Sphere {
         let mut rng = rand::thread_rng();
-        Sphere{id: rng.gen::<i32>()}
+        Sphere {
+            id: rng.gen::<i32>(),
+        }
     }
 
     pub fn intersect(&self, ray: Ray) -> Option<Intersections> {
@@ -45,17 +47,22 @@ impl Sphere {
         let t1 = (-b - discriminant.sqrt()) / (2.0 * a);
         let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
         Some(Intersections(vec![
-            Intersection{t: t1, object: self},
-            Intersection{t: t2, object: self}
+            Intersection {
+                t: t1,
+                object: self,
+            },
+            Intersection {
+                t: t2,
+                object: self,
+            },
         ]))
     }
 }
 
-#[derive(Debug,Clone,PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Intersections<'a>(Vec<Intersection<'a>>);
 
-
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Intersection<'a> {
     t: f32,
     object: &'a Sphere,
@@ -108,10 +115,10 @@ mod test {
         let point = Point::new(2.0, 3.0, 4.0);
         let vector = Vector::new(1.0, 0.0, 0.0);
         let ray = Ray::new(point, vector);
-        assert_eq!(ray.position(0.0),  Point::new(2.0, 3.0, 4.0));
-        assert_eq!(ray.position(1.0),  Point::new(3.0, 3.0, 4.0));
+        assert_eq!(ray.position(0.0), Point::new(2.0, 3.0, 4.0));
+        assert_eq!(ray.position(1.0), Point::new(3.0, 3.0, 4.0));
         assert_eq!(ray.position(-1.0), Point::new(1.0, 3.0, 4.0));
-        assert_eq!(ray.position(2.5),  Point::new(4.5, 3.0, 4.0));
+        assert_eq!(ray.position(2.5), Point::new(4.5, 3.0, 4.0));
     }
 
     #[test]
@@ -152,7 +159,6 @@ mod test {
         assert_eq!(1.0, intersections[1].t);
     }
 
-
     #[test]
     fn ray_infront_of_sphere() {
         let ray = Ray::new(Point::new(0.0, 0.0, 5.0), Vector::new(0.0, 0.0, 1.0));
@@ -167,8 +173,8 @@ mod test {
     fn hit_with_all_positive() {
         let s = Sphere::new();
         let intersections = Intersections(vec![
-            Intersection{t: 1.0, object: &s},
-            Intersection{t: 2.0, object: &s},
+            Intersection { t: 1.0, object: &s },
+            Intersection { t: 2.0, object: &s },
         ]);
         assert_eq!(1.0, intersections.hit().unwrap().t);
     }
@@ -177,8 +183,11 @@ mod test {
     fn hit_with_some_negative() {
         let s = Sphere::new();
         let intersections = Intersections(vec![
-            Intersection{t: -1.0, object: &s},
-            Intersection{t: 2.0, object: &s},
+            Intersection {
+                t: -1.0,
+                object: &s,
+            },
+            Intersection { t: 2.0, object: &s },
         ]);
         assert_eq!(2.0, intersections.hit().unwrap().t);
     }
@@ -187,21 +196,29 @@ mod test {
     fn hit_with_all_negative() {
         let s = Sphere::new();
         let intersections = Intersections(vec![
-            Intersection{t: -1.0, object: &s},
-            Intersection{t: -2.0, object: &s},
+            Intersection {
+                t: -1.0,
+                object: &s,
+            },
+            Intersection {
+                t: -2.0,
+                object: &s,
+            },
         ]);
         assert_eq!(None, intersections.hit());
     }
-
 
     #[test]
     fn hit_always_lowest_nonnegative_intersection() {
         let s = Sphere::new();
         let intersections = Intersections(vec![
-            Intersection{t: 5.0, object: &s},
-            Intersection{t: 7.0, object: &s},
-            Intersection{t: -3.0, object: &s},
-            Intersection{t: 2.0, object: &s},
+            Intersection { t: 5.0, object: &s },
+            Intersection { t: 7.0, object: &s },
+            Intersection {
+                t: -3.0,
+                object: &s,
+            },
+            Intersection { t: 2.0, object: &s },
         ]);
         assert_eq!(2.0, intersections.hit().unwrap().t);
     }

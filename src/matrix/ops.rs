@@ -2,8 +2,8 @@ use super::*;
 use crate::iterator::*;
 use crate::util;
 
-use std::ops::{Index,IndexMut,Mul};
-use std::cmp::{PartialEq,Eq};
+use std::cmp::{Eq, PartialEq};
+use std::ops::{Index, IndexMut, Mul};
 
 impl Matrix {
     pub fn new(height: usize, width: usize) -> Matrix {
@@ -13,17 +13,30 @@ impl Matrix {
             v2.push(row.clone());
         }
 
-        Matrix { height, width, values: v2 }
+        Matrix {
+            height,
+            width,
+            values: v2,
+        }
     }
 
     pub fn with_values(values: Vec<Vec<f32>>) -> Matrix {
         let height = values.len();
-        let width = values.first().expect("matrix requires at least one row").len();
+        let width = values
+            .first()
+            .expect("matrix requires at least one row")
+            .len();
         let mut m = Self::new(height, width);
 
         for (y, row) in values.iter().enumerate() {
             if row.len() != width {
-                panic!("matrix is not uniform {}x{}. Row {} has {} column((s).", height, width, y, row.len());
+                panic!(
+                    "matrix is not uniform {}x{}. Row {} has {} column((s).",
+                    height,
+                    width,
+                    y,
+                    row.len()
+                );
             }
 
             for (x, value) in row.iter().enumerate() {
@@ -66,7 +79,10 @@ impl Matrix {
 
     pub fn determinate(&self) -> Result<f32, String> {
         if self.height != self.width {
-            return Err(format!("Matrix must be square: {}x{}", self.height, self.width))
+            return Err(format!(
+                "Matrix must be square: {}x{}",
+                self.height, self.width
+            ));
         }
 
         if self.height == 2 && self.width == 2 {
@@ -74,18 +90,20 @@ impl Matrix {
             let b = self[(0, 1)];
             let c = self[(1, 0)];
             let d = self[(1, 1)];
-            return Ok((a * d) - (b * c))
+            return Ok((a * d) - (b * c));
         }
 
         let mut calculated = Ok(0.0);
         let mut calculated_something = false;
         for x in 0..self.width {
             calculated = calculated.and_then(|sum| {
-                self.cofactor(0, x).map(|cofactor| {
-                    calculated_something = true;
-                    let value = self[(0, x)];
-                    cofactor * value
-                }).map(|v| v + sum)
+                self.cofactor(0, x)
+                    .map(|cofactor| {
+                        calculated_something = true;
+                        let value = self[(0, x)];
+                        cofactor * value
+                    })
+                    .map(|v| v + sum)
             });
         }
 
@@ -94,30 +112,27 @@ impl Matrix {
                 if calculated_something {
                     Ok(x)
                 } else {
-                    Err(String::from("Matrix is not invertable and can't calculate determinate"))
+                    Err(String::from(
+                        "Matrix is not invertable and can't calculate determinate",
+                    ))
                 }
             }
-            err@_ => err
+            err @ _ => err,
         }
     }
 
     pub fn submatrix(&self, skip_y: usize, skip_x: usize) -> Result<Matrix, String> {
         if skip_y >= self.height || skip_x >= self.width {
-            return Err(format!("y:{} or x:{} is outside the matrix dimensions {}x{}", skip_y, skip_x, self.height, self.width))
+            return Err(format!(
+                "y:{} or x:{} is outside the matrix dimensions {}x{}",
+                skip_y, skip_x, self.height, self.width
+            ));
         }
         let mut m = Matrix::new(self.height - 1, self.width - 1);
         for (y, x) in self.iter() {
             if y != skip_y && x != skip_x {
-                let y2 = if y < skip_y {
-                    y
-                } else {
-                    y - 1
-                };
-                let x2 = if x < skip_x {
-                    x
-                } else {
-                    x - 1
-                };
+                let y2 = if y < skip_y { y } else { y - 1 };
+                let x2 = if x < skip_x { x } else { x - 1 };
 
                 m[(y2, x2)] = self[(y, x)];
             }
@@ -126,7 +141,7 @@ impl Matrix {
     }
 
     pub fn minor(&self, y: usize, x: usize) -> Result<f32, String> {
-        return self.submatrix(y, x).and_then(|m| m.determinate())
+        return self.submatrix(y, x).and_then(|m| m.determinate());
     }
 
     pub fn cofactor(&self, y: usize, x: usize) -> Result<f32, String> {
@@ -143,7 +158,7 @@ impl Matrix {
                     true
                 }
             }
-            _ => false
+            _ => false,
         }
     }
 
@@ -153,13 +168,15 @@ impl Matrix {
                 let mut inverse = Self::new(self.height, self.width);
                 for (y, x) in self.iter() {
                     match self.cofactor(x, y) {
-                        Ok(cofactor) => { inverse[(y, x)] = cofactor / determinate; }
-                        Err(e) => return Err(e)
+                        Ok(cofactor) => {
+                            inverse[(y, x)] = cofactor / determinate;
+                        }
+                        Err(e) => return Err(e),
                     }
                 }
                 Ok(inverse)
             }
-            Err(e) => Err(e)
+            Err(e) => Err(e),
         }
     }
 }
@@ -182,16 +199,18 @@ impl PartialEq for Matrix {
         if self.dimensions() != rhs.dimensions() {
             return false;
         }
-        self.iter().all(|dimensions| {
-            util::feq(self[dimensions], rhs[dimensions])
-        })
+        self.iter()
+            .all(|dimensions| util::feq(self[dimensions], rhs[dimensions]))
     }
 }
 impl Eq for Matrix {}
 
 fn matrix_mul_helper(lhs: &Matrix, rhs: &Matrix) -> Result<Matrix, String> {
     if lhs.width != rhs.height {
-        return Err(format!("width of left ({}x{}) does not match height of rhs ({}x{})", lhs.height, lhs.width, rhs.height, rhs.width));
+        return Err(format!(
+            "width of left ({}x{}) does not match height of rhs ({}x{})",
+            lhs.height, lhs.width, rhs.height, rhs.width
+        ));
     }
 
     let mut result = Matrix::new(lhs.height, rhs.width);
@@ -207,32 +226,44 @@ fn matrix_mul_helper(lhs: &Matrix, rhs: &Matrix) -> Result<Matrix, String> {
 
 impl Mul<Matrix> for Matrix {
     type Output = Result<Self, String>;
-    fn mul(self, rhs: Self) -> Self::Output { matrix_mul_helper(&self, &rhs) }
+    fn mul(self, rhs: Self) -> Self::Output {
+        matrix_mul_helper(&self, &rhs)
+    }
 }
 
 impl Mul<&Matrix> for &Matrix {
     type Output = Result<Matrix, String>;
-    fn mul(self, rhs: &Matrix) -> Self::Output { matrix_mul_helper(self, rhs) }
+    fn mul(self, rhs: &Matrix) -> Self::Output {
+        matrix_mul_helper(self, rhs)
+    }
 }
 
 impl Mul<Result<Matrix, String>> for Matrix {
     type Output = Result<Matrix, String>;
-    fn mul(self, rhs: Result<Matrix, String>) -> Self::Output { rhs.and_then(|rhs| self * rhs) }
+    fn mul(self, rhs: Result<Matrix, String>) -> Self::Output {
+        rhs.and_then(|rhs| self * rhs)
+    }
 }
 
 impl Mul<Result<&Matrix, String>> for &Matrix {
     type Output = Result<Matrix, String>;
-    fn mul(self, rhs: Result<&Matrix, String>) -> Self::Output { rhs.and_then(|rhs| self * rhs) }
+    fn mul(self, rhs: Result<&Matrix, String>) -> Self::Output {
+        rhs.and_then(|rhs| self * rhs)
+    }
 }
 
 impl Mul<Matrix> for Result<Matrix, String> {
     type Output = Result<Matrix, String>;
-    fn mul(self, rhs: Matrix) -> Self::Output { self.and_then(|lhs| lhs * rhs) }
+    fn mul(self, rhs: Matrix) -> Self::Output {
+        self.and_then(|lhs| lhs * rhs)
+    }
 }
 
 impl Mul<&Matrix> for Result<&Matrix, String> {
     type Output = Result<Matrix, String>;
-    fn mul(self, rhs: &Matrix) -> Self::Output { self.and_then(|lhs| lhs * rhs) }
+    fn mul(self, rhs: &Matrix) -> Self::Output {
+        self.and_then(|lhs| lhs * rhs)
+    }
 }
 
 #[cfg(test)]
@@ -263,13 +294,13 @@ mod test {
             13.5, 14.5, 15.5, 16.5;
         ];
 
-        assert_eq!(m[(0,0)], 1.0);
-        assert_eq!(m[(0,3)], 4.0);
-        assert_eq!(m[(1,0)], 5.5);
-        assert_eq!(m[(1,2)], 7.5);
-        assert_eq!(m[(2,2)], 11.0);
-        assert_eq!(m[(3,0)], 13.5);
-        assert_eq!(m[(3,2)], 15.5);
+        assert_eq!(m[(0, 0)], 1.0);
+        assert_eq!(m[(0, 3)], 4.0);
+        assert_eq!(m[(1, 0)], 5.5);
+        assert_eq!(m[(1, 2)], 7.5);
+        assert_eq!(m[(2, 2)], 11.0);
+        assert_eq!(m[(3, 0)], 13.5);
+        assert_eq!(m[(3, 2)], 15.5);
     }
 
     #[test]
@@ -279,10 +310,10 @@ mod test {
             1.0, -2.0;
         ];
 
-        assert_eq!(m[(0,0)], -3.0);
-        assert_eq!(m[(0,1)], 5.0);
-        assert_eq!(m[(1,0)], 1.0);
-        assert_eq!(m[(1,1)], -2.0);
+        assert_eq!(m[(0, 0)], -3.0);
+        assert_eq!(m[(0, 1)], 5.0);
+        assert_eq!(m[(1, 0)], 1.0);
+        assert_eq!(m[(1, 1)], -2.0);
     }
 
     #[test]
@@ -293,9 +324,9 @@ mod test {
             0.0, 1.0, 1.0;
         ];
 
-        assert_eq!(m[(0,0)], -3.0);
-        assert_eq!(m[(1,1)], -2.0);
-        assert_eq!(m[(2,2)], 1.0);
+        assert_eq!(m[(0, 0)], -3.0);
+        assert_eq!(m[(1, 1)], -2.0);
+        assert_eq!(m[(2, 2)], 1.0);
     }
 
     #[test]
@@ -376,9 +407,7 @@ mod test {
             8.0, 6.0, 4.0, 1.0;
             0.0, 0.0, 0.0, 1.0
         ];
-        let tuple = tuple![
-            1.0, 2.0, 3.0, 1.0
-        ];
+        let tuple = tuple![1.0, 2.0, 3.0, 1.0];
         assert_eq!(4, tuple.height);
         assert_eq!(1, tuple.width);
 
@@ -481,9 +510,7 @@ mod test {
 
     #[test]
     fn determinate_unknown() {
-        assert!(matrix![
-            1.0, 2.0, 3.0
-        ].determinate().is_err());
+        assert!(matrix![1.0, 2.0, 3.0].determinate().is_err());
     }
 
     #[test]
@@ -493,10 +520,13 @@ mod test {
             -3.0, 2.0, 7.0;
             0.0, 6.0, -3.0
         ];
-        assert_eq!(Ok(matrix![
-            -3.0, 2.0;
-            0.0, 6.0
-        ]), m.submatrix(0, 2));
+        assert_eq!(
+            Ok(matrix![
+                -3.0, 2.0;
+                0.0, 6.0
+            ]),
+            m.submatrix(0, 2)
+        );
 
         let m = matrix![
             -6.0, 1.0, 1.0, 6.0;
@@ -504,11 +534,14 @@ mod test {
             -1.0, 0.0, 8.0, 2.0;
             -7.0, 1.0, -1.0, 1.0
         ];
-        assert_eq!(Ok(matrix![
-            -6.0, 1.0, 6.0;
-            -8.0, 8.0, 6.0;
-            -7.0, -1.0, 1.0
-        ]), m.submatrix(2, 1));
+        assert_eq!(
+            Ok(matrix![
+                -6.0, 1.0, 6.0;
+                -8.0, 8.0, 6.0;
+                -7.0, -1.0, 1.0
+            ]),
+            m.submatrix(2, 1)
+        );
     }
 
     #[test]
@@ -587,16 +620,19 @@ mod test {
         let b = a.inverse().unwrap();
         assert_eq!(Ok(532.0), a.determinate());
         assert_eq!(Ok(-160.0), a.cofactor(2, 3));
-        assert_feq!(-160.0/532.0, b[(3, 2)]);
+        assert_feq!(-160.0 / 532.0, b[(3, 2)]);
 
         assert_eq!(Ok(105.0), a.cofactor(3, 2));
-        assert_feq!(105.0/532.0, b[(2, 3)]);
-        assert_eq!(matrix![
-            0.21805, 0.45113, 0.24060, -0.04511;
-            -0.80827, -1.45677, -0.44361, 0.52068;
-            -0.07895, -0.22368, -0.05263, 0.19737;
-            -0.52256, -0.81391, -0.30075, 0.30639
-        ], b);
+        assert_feq!(105.0 / 532.0, b[(2, 3)]);
+        assert_eq!(
+            matrix![
+                0.21805, 0.45113, 0.24060, -0.04511;
+                -0.80827, -1.45677, -0.44361, 0.52068;
+                -0.07895, -0.22368, -0.05263, 0.19737;
+                -0.52256, -0.81391, -0.30075, 0.30639
+            ],
+            b
+        );
     }
 
     #[test]
@@ -608,12 +644,15 @@ mod test {
             -3.0, 0.0, -9.0, -4.0
         ];
 
-        assert_eq!(Ok(matrix![
-            -0.15385, -0.15385, -0.28205, -0.53846;
-            -0.07692, 0.12308, 0.02564, 0.03077;
-            0.35897, 0.35897, 0.43590, 0.92308;
-            -0.69231, -0.69231, -0.76923, -1.92308
-        ]), a.inverse());
+        assert_eq!(
+            Ok(matrix![
+                -0.15385, -0.15385, -0.28205, -0.53846;
+                -0.07692, 0.12308, 0.02564, 0.03077;
+                0.35897, 0.35897, 0.43590, 0.92308;
+                -0.69231, -0.69231, -0.76923, -1.92308
+            ]),
+            a.inverse()
+        );
     }
 
     #[test]
@@ -625,12 +664,15 @@ mod test {
             -7.0, 6.0, 6.0, 2.0
         ];
 
-        assert_eq!(Ok(matrix![
-            -0.04074, -0.07778, 0.14444, -0.22222;
-            -0.07778, 0.03333, 0.36667, -0.33333;
-            -0.02901, -0.14630, -0.10926, 0.12963;
-            0.17778, 0.06667, -0.26667, 0.33333
-        ]), a.inverse());
+        assert_eq!(
+            Ok(matrix![
+                -0.04074, -0.07778, 0.14444, -0.22222;
+                -0.07778, 0.03333, 0.36667, -0.33333;
+                -0.02901, -0.14630, -0.10926, 0.12963;
+                0.17778, 0.06667, -0.26667, 0.33333
+            ]),
+            a.inverse()
+        );
     }
 
     #[test]

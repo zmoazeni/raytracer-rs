@@ -24,18 +24,21 @@ macro_rules! tuple {
 
 #[macro_export]
 macro_rules! assert_feq {
-    ($left:expr, $right:expr) => ({
+    ($left:expr, $right:expr) => {{
         match (&$left, &$right) {
             (left_val, right_val) => {
                 if !(util::feq(*left_val, *right_val)) {
                     // The reborrows below are intentional. Without them, the stack slot for the
                     // borrow is initialized even before the values are compared, leading to a
                     // noticeable slow down.
-                    panic!(r#"assertion failed: `feq(left, right)`
+                    panic!(
+                        r#"assertion failed: `feq(left, right)`
   left: `{:?}`,
- right: `{:?}`"#, &*left_val, &*right_val)
+ right: `{:?}`"#,
+                        &*left_val, &*right_val
+                    )
                 }
             }
         }
-    });
+    }};
 }

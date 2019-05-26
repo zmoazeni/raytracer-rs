@@ -1,15 +1,15 @@
 use super::*;
-use std::fs::File;
-use std::path::Path;
-use std::io::{BufWriter, Write};
-use std::ops::{Index,IndexMut};
 use iterator::*;
+use std::fs::File;
+use std::io::{BufWriter, Write};
+use std::ops::{Index, IndexMut};
+use std::path::Path;
 
 const MAX_PPM_LINE_LENGTH: usize = 70;
 
 pub struct Canvas {
     pub dimensions: (usize, usize),
-    pixels: Vec<Vec<Color>>
+    pixels: Vec<Vec<Color>>,
 }
 
 impl Canvas {
@@ -20,7 +20,10 @@ impl Canvas {
             v2.push(row.clone())
         }
 
-        Canvas { dimensions: (width, height), pixels: v2 }
+        Canvas {
+            dimensions: (width, height),
+            pixels: v2,
+        }
     }
 
     pub fn set(&mut self, (x, y): (usize, usize), color: Color) {
@@ -49,9 +52,12 @@ impl Canvas {
 
     pub fn ppm_header(&self) -> String {
         let (width, height) = self.dimensions;
-        format!("P3\n\
-            {} {}\n\
-            256\n", width, height)
+        format!(
+            "P3\n\
+             {} {}\n\
+             256\n",
+            width, height
+        )
     }
 
     pub fn write_ppm_pixels<W: Write>(&self, write: &mut W) -> Result<(), std::io::Error> {
@@ -150,10 +156,22 @@ mod test {
         }
         let lines = ppm_lines(&c);
         assert_eq!(lines.len(), 8);
-        assert_eq!(lines[3], "255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 255 204");
-        assert_eq!(lines[4], "153 255 204 153 255 204 153 255 204 153 255 204 153");
-        assert_eq!(lines[5], "255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 255 204");
-        assert_eq!(lines[6], "153 255 204 153 255 204 153 255 204 153 255 204 153");
+        assert_eq!(
+            lines[3],
+            "255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 255 204"
+        );
+        assert_eq!(
+            lines[4],
+            "153 255 204 153 255 204 153 255 204 153 255 204 153"
+        );
+        assert_eq!(
+            lines[5],
+            "255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 255 204"
+        );
+        assert_eq!(
+            lines[6],
+            "153 255 204 153 255 204 153 255 204 153 255 204 153"
+        );
         assert_eq!(lines[7], "");
     }
 
